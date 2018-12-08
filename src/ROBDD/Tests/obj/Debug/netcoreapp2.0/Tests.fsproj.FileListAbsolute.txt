@@ -1,0 +1,12 @@
+/home/oscarftoro/Documentos/6.semester/dev/fsharp/bdd/src/ROBDD/Tests/bin/Debug/netcoreapp2.0/xunit.runner.visualstudio.dotnetcore.testadapter.dll
+/home/oscarftoro/Documentos/6.semester/dev/fsharp/bdd/src/ROBDD/Tests/bin/Debug/netcoreapp2.0/xunit.runner.reporters.netcoreapp10.dll
+/home/oscarftoro/Documentos/6.semester/dev/fsharp/bdd/src/ROBDD/Tests/bin/Debug/netcoreapp2.0/xunit.runner.utility.netcoreapp10.dll
+/home/oscarftoro/Documentos/6.semester/dev/fsharp/bdd/src/ROBDD/Tests/bin/Debug/netcoreapp2.0/Tests.deps.json
+/home/oscarftoro/Documentos/6.semester/dev/fsharp/bdd/src/ROBDD/Tests/bin/Debug/netcoreapp2.0/Tests.runtimeconfig.json
+/home/oscarftoro/Documentos/6.semester/dev/fsharp/bdd/src/ROBDD/Tests/bin/Debug/netcoreapp2.0/Tests.runtimeconfig.dev.json
+/home/oscarftoro/Documentos/6.semester/dev/fsharp/bdd/src/ROBDD/Tests/bin/Debug/netcoreapp2.0/Tests.dll
+/home/oscarftoro/Documentos/6.semester/dev/fsharp/bdd/src/ROBDD/Tests/bin/Debug/netcoreapp2.0/Tests.pdb
+/home/oscarftoro/Documentos/6.semester/dev/fsharp/bdd/src/ROBDD/Tests/bin/Debug/netcoreapp2.0/ROBDD.dll
+/home/oscarftoro/Documentos/6.semester/dev/fsharp/bdd/src/ROBDD/Tests/bin/Debug/netcoreapp2.0/ROBDD.pdb
+/home/oscarftoro/Documentos/6.semester/dev/fsharp/bdd/src/ROBDD/Tests/obj/Debug/netcoreapp2.0/Tests.dll
+/home/oscarftoro/Documentos/6.semester/dev/fsharp/bdd/src/ROBDD/Tests/obj/Debug/netcoreapp2.0/Tests.pdb
