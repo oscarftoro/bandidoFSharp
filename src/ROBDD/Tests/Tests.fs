@@ -14,26 +14,79 @@ let ``My test`` () =
  //T
 
 [<Fact>]
-let ``Init test returns 2_keys`` () =
+let ``T init test returns 2_keys`` () =
       let t = Map.ofList []
-      let tInited = T.init t 4;
+      let tInited = T.init 4 t;
       let size = tInited |> Map.toSeq |> Seq.map fst |> Seq.length
 
       Assert.Equal(2,size);
+
+[<Fact>]
+let ``T add add a node`` () =
+    let t = Map.ofList []
+    let tInited = T.init 5 t 
+    let node = (INF struct (4,Some(1),Some(0)) )
+    let (newU, newT) = T.add node tInited  
+    let size = newT |> Map.toSeq |> Seq.map fst |> Seq.length
+
+    Assert.Equal(3, size)
+    Assert.Equal(2,newU)
+
+[<Fact>]
+let ``T Add add a node and check get from t`` () =
+    let t = Map.ofList []
+    let tInited = T.init 5 t
+    let node = (INF struct(4,Some(1),Some(0)) )
+    let (newU, newT) = T.add node tInited 
+    let expecting = Map.find 2 newT 
+    
+    Assert.Equal( (INF struct (4,Some(1),Some(0))), expecting  )
   
+[<Fact>]
+let ``T var check var `` () =
+    let t = Map.ofList []
+    let tInited = T.init 5 t
+    let node = (INF struct (4,Some(1),Some(0)) )
+    let (newT,newU) = T.add node tInited  
+    let variable = T.v newT newU 
+
+    Assert.Equal(4, variable)
+ 
+[<Fact>]
+
+let ``T low check low `` () =
+    let t = Map.ofList []
+    let tInited = T.init 5 t
+    let node = (INF struct (4,Some(1),Some(0)) )
+    let (newU, newT) = T.add node tInited 
+    let low = T.low newU newT 
+
+    Assert.Equal(Some (1), low);
+
+[<Fact>]
+let ``T high check high `` () =
+    let t = Map.ofList []
+    let tInited = T.init 5 t
+    let node = (INF struct (4,Some(1),Some(0)))
+    let (newU,newT) = T.add node tInited
+    let high = T.high newU newT
+
+    Assert.Equal(Some(0),high )
+ 
+//mk
 
 [<Fact>]
 let ``Make six nodes `` () =
         let t = Map.ofList []
         let h = Map.ofList []
-        let t0 = T.init t 5
-        let h0 = H.init h 5
-        let (t1,h1,u1) = BDD.mk t0 h0 (INF struct (4,Some(1),Some(0) ) )
-        let (t2,h2,u2) = BDD.mk t1 h1 (INF struct (4,Some(0),Some(1) ) )
-        let (t3,h3,u3) = BDD.mk t2 h2 (INF struct (3,Some(2),Some(3) ) )
-        let (t4,h4,u4) = BDD.mk t3 h3 (INF struct (2,Some(4),Some(0) ) )
-        let (t5,h5,u5) = BDD.mk t4 h4 (INF struct (2,Some(0),Some(4) ) )
-        let (t6,h6,u6) = BDD.mk t5 h5 (INF struct (1,Some(5),Some(6) ) )
+        let t0 = T.init 5 t
+        let h0 = H.init 5 h
+        let (u1,t1,h1) = BDD.mk (INF struct (4,Some(1),Some(0)) )  t0 h0 
+        let (u2,t2,h2) = BDD.mk (INF struct (4,Some(0),Some(1)) )  t1 h1 
+        let (u3,t3,h3) = BDD.mk (INF struct (3,Some(2),Some(3)) )  t2 h2 
+        let (u4,t4,h4) = BDD.mk (INF struct (2,Some(4),Some(0)) )  t3 h3
+        let (u5,t5,h5) = BDD.mk (INF struct (2,Some(0),Some(4)) )  t4 h4 
+        let (u6,t6,h6) = BDD.mk (INF struct (1,Some(5),Some(6)) )  t5 h5 
 
         Assert.Equal(7,u6)
 
