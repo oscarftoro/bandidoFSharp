@@ -1,6 +1,7 @@
 #load "Library.fs"
 
 open ROBDD.BDD
+open ROBDD.Types
 
 let ex01 = Or(Iff(X 1, X 2), X 3)
 

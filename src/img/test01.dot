@@ -1,0 +1,6 @@
+graph G {
+  size="4,4";
+  x4 -> 1 [style=dotted];
+  0 [shape=box];
+  1 [shape=box];
+}
