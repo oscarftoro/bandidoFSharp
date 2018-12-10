@@ -25,7 +25,5 @@ graph  {
   x_43 -- 1 
   x_43 -- 0 [style=dashed]
   
-  1 
-  0 
   
 }
