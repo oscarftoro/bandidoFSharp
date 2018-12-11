@@ -64,6 +64,7 @@ module H =
   let init i h : H = 
     let h0 = insert (INF struct (i,None,None)) 0 h
     //since for values 0 and 1 the key is identicall we only save the first one: 0
+    //we could add 0 and 1 at the end such that i = 5 becomes 50 and 51 
     h0
 
 
@@ -154,6 +155,30 @@ module BDD =
 
 module Plot =
   open Types
+ 
+  let tEntry2dotLine (u : int)  ((INF struct (i,olw,ohg )) as inf)  (dot: string) =
+    match u with 
+    | 0 -> dot + "graph { 1 [shape=box] 0 [shape=box] "
+    | 1 -> dot
+    | u1 -> 
+      let lw , hg = Option.get olw , Option.get ohg
+
+      let labels = dot    + sprintf " %i [label=<X<SUB>%i</SUB>>,shape=circle, xlabel=%i] " u1 i u1  in
+      let lablow = labels + sprintf " %i -- %i [style=dashed]" u1 lw in
+      lablow + sprintf " %i -- %i " u1 hg
+      
+           
+      
+ 
+  let t2dot (t:T) : string =
+    //iterate the map
+    let arr = Map.toArray t |> Array.sortBy (fun (k,_v) -> -k)
+    let beg = Array.foldBack (fun (k, v) acc ->  (tEntry2dotLine k v acc) ) arr ""
+    in beg + "}"
+    //let result = Map.foldBack (fun k v acc ->  (tEntry2dotLine k v acc) ) t ""
+    //translate entries into nodes and edges in dot*
+    //result    
+
 
 //how to execute command:
 // System.Dianostics.Process.Start("cmd", "/c dir")

@@ -1,0 +1,1 @@
+dot -Tsvg filename.dot -o output.svg

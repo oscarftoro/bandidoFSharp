@@ -1,0 +1,28 @@
+graph { 
+  1 [shape=box] 
+  0 [shape=box]  
+
+  x_42 [label=<X<SUB>4</SUB>>,shape=circle, xlabel=2]  
+  x_43 [label=<X<SUB>4</SUB>>,shape=circle, xlabel=3] 
+  x_34 [label=<X<SUB>3</SUB>>,shape=circle, xlabel=4]  
+  x_25 [label=<X<SUB>2</SUB>>,shape=circle, xlabel=5]  
+  x_26 [label=<X<SUB>2</SUB>>,shape=circle, xlabel=6]  
+  x_17 [label=<X<SUB>1</SUB>>,shape=circle, xlabel=7]
+
+  x_42 --1 [style=dashed]  
+  x_42 -- 0  
+ 
+  x_43 -- 0 [style=dashed]  
+  x_43 -- 1  
+  
+  x_34 -- 2 [style=dashed]  
+  x_34 -- 3  
+  
+  x_25 -- 4 [style=dashed]  
+  x_25 -- 0  
+  
+  x_26 -- 0 [style=dashed]  
+  x_26 -- 4  
+    
+  x_17 -- 5 [style=dashed]  
+  x_17 -- 6 }
