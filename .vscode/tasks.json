@@ -1,0 +1,36 @@
+{
+  "version": "2.0.0",
+    "presentation": {
+        "reveal": "silent"
+  },
+  "tasks" : [
+        {
+          "taskName": "restore DotNetCore",
+          "command": "dotnet",
+          "type": "shell",
+          "args": [
+              "restore",
+              "src/ROBDD/ROBDD.fsproj"
+          ],
+          "presentation": {
+              "reveal": "silent"
+          },
+          "problemMatcher": "$msCompile"
+        },
+        {
+          "taskName": "build DotNetCore",
+          "command": "dotnet",
+          "type": "shell",
+          "group": "build",
+          "args": [
+              "build",
+              "src/ROBDD/ROBDD.fsproj"
+          ],
+          "dependsOn": "restore DotNetCore",
+          "presentation": {
+              "reveal": "silent"
+          },
+          "problemMatcher": "$msCompile"
+        }
+        ]
+}

@@ -1,5 +1,7 @@
 namespace ROBDD
 
+open System
+
 module Types = 
    type Inf  = INF of struct ( int * Option<int> * Option<int>)
    type U    = int
@@ -38,6 +40,7 @@ module T =
     t1
 
   let add (inf : Inf) (t: T) = 
+    //precondition: t is never empty. ALLWAYS CALL init :  int -> T -> T before calling ADD  
     let u = (Map.toArray t) |> Array.map(fun (k,_v) -> k) 
             |> Array.max //last entered u 
     (u+1, Map.add (u+1) inf t)  
@@ -54,7 +57,6 @@ module H =
   open Types
   let initEmpty : H = Map.empty<Inf,U>  
 
-  
   let isMember (inf: Inf) (h: H) : bool = Map.exists (fun inf' _ -> inf = inf') h
 
   let lookup (inf: Inf) (h : H)  = Map.tryFind inf h 
@@ -66,7 +68,6 @@ module H =
     //since for values 0 and 1 the key is identicall we only save the first one: 0
     //we could add 0 and 1 at the end such that i = 5 becomes 50 and 51 
     h0
-
 
 module BDD =
    open Types
@@ -131,22 +132,32 @@ module BDD =
        let u = Option.get (H.lookup (INF struct (i,lw,hg)) h) in
        (u,t,h)
      else 
-       let (u,newT) = T.add (INF struct (i,lw,hg)) t in  
+       let (u,newT) = T.add (INF struct (i,lw,hg)) t  in 
+       printfn "u: %A" u  //there is a bug here
        let newH     = H.insert (INF struct (i,lw,hg)) u h in 
        (u,newT,newH)
 
 
-   let build (bve: BVarExpr) (n: int) (t: T) (h: H) = 
-    let rec build' (bve0 : BVarExpr) (n: int) (i: int) (t: T) (h: H) =
-      if i > n then 
-        let b : bool = (bve2be >> eval ) bve 
-        if b then (0,t,h) else (1,t,h)
+   let build (bve: BVarExpr) (n: int)  =
+    
+    let  (t0,h0) : (T * H) = Map.ofList [], Map.ofList [] in
+    let mutable (t,h) = T.init n t0, H.init n h0 
+    let rec build' (bve0 : BVarExpr) (n0: int) (i0: int)  =
+      if i0 > n0 then 
+        //printfn "variable i : %i" i0
+       // printfn "variable bve : %A" bve0
+        let b : bool = (bve2be >> eval ) bve0 
+        //printfn "variable b: %A" b
+        if (not b) then (0,t,h) else (1,t,h)
       else 
-        let (u0,t0,h0) = build' (expand bve0 i false) n (i+1) t h 
-        let (u1,t1,h1) = build' (expand bve0 i true ) n (i+1) t h
-        mk (INF struct (i,Some u0,Some u1)) t h
+        let (u0,_,_) = build' (expand bve0 i0 false) n0 (i0+1) 
+        let (u1,_,_) = build' (expand bve0 i0 true ) n0 (i0+1) 
         
-    build' bve n 1 t h  
+        let (v,t0,h0) =  mk (INF struct (i0,Some u0,Some u1)) t h
+        t  <- t0
+        h  <- h0
+        (v,t,h)
+    build' bve n 1 
     
 
    let hello name =
@@ -178,12 +189,13 @@ module Plot =
     //let result = Map.foldBack (fun k v acc ->  (tEntry2dotLine k v acc) ) t ""
     //translate entries into nodes and edges in dot*
     //result    
-
+  
+   
 
 //how to execute command:
 // System.Dianostics.Process.Start("cmd", "/c dir")
 
-//define how the code should look like to 
-//draw a figure
+//define how the code should look like to *DONE
+//draw a figure *DONE
 
-//translate each k,v in T to nodes and edges in dot
+//translate each k,v in T to nodes and edges in dot *DONE

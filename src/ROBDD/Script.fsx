@@ -43,4 +43,32 @@ let h : H = Map.ofArray [|((INF struct (50,None,None))      ,0)
                         ; ((INF struct (2,Some(0),Some(4)) ),6) 
                         ; ((INF struct (1,Some(5),Some(6)) ),7)|]
    
-let Some (t0) = H.lookup (INF struct (5,None,None)) h 
+let Some (t0) = H.lookup (INF struct (50,None,None)) h 
+
+//let us test the build function
+let (h0,t0) : H * T = (Map.ofList [], Map.ofList [])
+
+let u0, h1, t1 = 
+//there is an error in build 
+BDD.build (Or(Iff(X 1,X 2), X 3)) 3
+
+(* it visits only the left part of the tree and die
+see whether you can find something:
+https://powerusers.microsoft.com/t5/General-Flow-Discussion/Input-Array-Was-Empty-but-it-is-not/td-p/66258
+
+> BDD.build (Or(Iff(X 1,X 2), X 3)) 3;;
+variable i : 4
+variable bve : Or (Iff (B false,B false),B false)
+variable b: true
+variable i : 4
+variable bve : Or (Iff (B false,B false),B true)
+variable b: true
+variable i : 4
+variable bve : Or (Iff (B false,B true),B false)
+variable b: false
+variable i : 4
+variable bve : Or (Iff (B false,B true),B true)
+variable b: true
+System.ArgumentException: The input array was empty.
+Parameter name: array
+*)
