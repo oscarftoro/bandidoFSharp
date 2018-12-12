@@ -48,9 +48,10 @@ let Some (t0) = H.lookup (INF struct (50,None,None)) h
 //let us test the build function
 let (h0,t0) : H * T = (Map.ofList [], Map.ofList [])
 
-let u0, h1, t1 = 
-//there is an error in build 
-BDD.build (Or(Iff(X 1,X 2), X 3)) 3
+let u0, t1, h1 = BDD.build (Or(Iff(X 1,X 2), X 3)) 3
+
+Plot.t2dot t1;;
+
 
 (* it visits only the left part of the tree and die
 see whether you can find something:
