@@ -1,5 +1,0 @@
-/home/oscarftoro/Documentos/6.semester/dev/fsharp/bdd/src/ROBDD/bin/Release/netstandard2.0/ROBDD.deps.json
-/home/oscarftoro/Documentos/6.semester/dev/fsharp/bdd/src/ROBDD/bin/Release/netstandard2.0/ROBDD.dll
-/home/oscarftoro/Documentos/6.semester/dev/fsharp/bdd/src/ROBDD/bin/Release/netstandard2.0/ROBDD.pdb
-/home/oscarftoro/Documentos/6.semester/dev/fsharp/bdd/src/ROBDD/obj/Release/netstandard2.0/ROBDD.dll
-/home/oscarftoro/Documentos/6.semester/dev/fsharp/bdd/src/ROBDD/obj/Release/netstandard2.0/ROBDD.pdb
