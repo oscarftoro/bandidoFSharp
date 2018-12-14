@@ -169,9 +169,11 @@ module BDD =
      (b2i b1, b2i b2)
    //apply uses dynamic programming to apply a boolean operation 
    //between two BDD's nodes
+   //precondition: tables t and h are not empty
    let apply (op: bool -> bool -> BExpr) u1 u2 t h =
      let mutable g : Map<int*int,int> = Map.ofList [] in
-     let  (t0,h0) : (T * H) = Map.ofList [], Map.ofList [] in
+     //let  (t00,h00) : (T * H) = Map.ofList [], Map.ofList [] in
+     //let (t0,h0) : (T * H) = T.init t0, H.init h0 //given a t init taking the last largest u in table T
 
      let rec app u1 u2 t0 h0 =
        if Map.containsKey (u1,u2) g then (Map.find (u1,u2) g, t0,h0)
@@ -187,7 +189,7 @@ module BDD =
          let (u,t3,h3) = mk (INF struct (T.v u1 t0,Some low,Some high)) t2 h2  in
          g <- Map.add (u1,u2) u g 
          
-         (u,t1,h1)
+         (u,t3,h3)
        else if T.v(u1) t0 < T.v(u2) t0 then
          let (low,t1,h1)  = app (Option.get (T.low u1 t0)) u2 t0 h0 
          let (high,t2,h2) = app (Option.get (T.high u1 t0)) u2 t1 h1
@@ -200,12 +202,12 @@ module BDD =
          let (low,t1,h1)  = app u1 (Option.get (T.low u2 t0)) t0 h0 
          let (high,t2,h2) = app u1 (Option.get (T.high u2 t0)) t1 h1
          
-         let (u,t1,h1) = mk (INF struct (T.v u2 t0, Some low, Some high)) t2 h2 in
+         let (u,t3,h3) = mk (INF struct (T.v u2 t0, Some low, Some high)) t2 h2 in
          g <- Map.add (u1,u2) u g 
          
-         (u,t1,h1)
+         (u,t3,h3)
 
-     app u1 u2 t0 h0
+     app u1 u2 t h
     
 
    let hello name =
