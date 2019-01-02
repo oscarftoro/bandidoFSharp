@@ -70,76 +70,76 @@ module H =
     h0
 
 module BDD =
-   open Types
-   open T
-   open H 
+  open Types
+  open T
+  open H 
 
-   let mkAnd be0 be1 =  And(be0, be1)
-   let mfOr be0 be1 = Or(be0,be1)
-   let mkThen be0 be1 = Then(be0,be1)
-   let mkIff be0 be1 = Iff(be0,be1)
-   let mkNot be0 = Not be0
-   let mkBVE be0 = 
-     //check the biggest x in be0
-     // construct the type
-     B true
+  let mkAnd be0 be1 =  And(be0, be1)
+  let mfOr be0 be1 = Or(be0,be1)
+  let mkThen be0 be1 = Then(be0,be1)
+  let mkIff be0 be1 = Iff(be0,be1)
+  let mkNot be0 = Not be0
+  let mkBVE be0 = 
+   //check the biggest x in be0
+   // construct the type
+   B true
 
-   let mkTH = Map.empty<U,Inf> , Map.empty<Inf,U>  
-       
-   //given a Boolean Expression be, a variable number x and a boolean b
-   //bind x to b
-   let rec expand (be: BVarExpr) (x: int) (b: bool) =
-   //it should fail here when x > maxVar(be) or x < maxVar(be) 
-        match be with
-        | And(be0,be1)            -> And(expand be0 x b, expand be1 x b)
-        | Or(be0,be1)             -> Or(expand be0 x b, expand be1 x b)
-        | Then(be0,be1)           -> Then(expand be0 x b, expand be1 x b)
-        | Iff(be0,be1)            -> Iff(expand be0 x b, expand be1 x b)
-        | Not(be0)                -> Not(expand be0 x b)
-        | B b0                    -> B b0
-        | X e when e = x          -> B b
-        | X e when e <> x         -> X e
-   //   | X e when x > e || x < e -> failwith "variable number x not found! because is out of bound in expand"          
-        | X ______                -> failwith "something went very wrong with x in expand. It is not out of bound but is bad!"
-       
-   let shannonExpand(be: BVarExpr) (x: int) = (expand be x true, expand be x false)
-   
-   //precondition: there is no variable number x in the BVarExpr
-   // it transform to a Boolean Expression that can be evaluated with eval
-   let rec bve2be = 
-     function
-     | And(be0,be1)    -> Conj(bve2be be0, bve2be be1)
-     | Or(be0,be1)     -> Disj(bve2be be0, bve2be be1)
-     | Then(be0,be1)   -> Imp(bve2be be0, bve2be be1)
-     | Iff(be0,be1)    -> BImp(bve2be be0, bve2be be1)
-     | Not(be0)        -> Neg(bve2be be0)
-     | B b0            -> Bl b0
-     | X _             -> failwith "we are not expecting variables x when converting to Boolean Expressions"
-                
-   let rec eval = 
-     function
-     | Conj(be0,be1) -> eval be0 && eval be1
-     | Disj(be0,be1) -> eval be0 || eval be1
-     | Imp(be0,be1)  -> (eval (Neg(be0)) ) || eval be1 
-     | BImp(be0,be1) -> (eval (Imp(be0,be1)) ) && (eval (Imp(be1,be0)) )
-     | Neg(be0)      -> not (eval be0)
-     | Bl b          -> b
+  let mkTH = Map.empty<U,Inf> , Map.empty<Inf,U>  
+     
+  //given a Boolean Expression be, a variable number x and a boolean b
+  //bind x to b
+  let rec expand (be: BVarExpr) (x: int) (b: bool) =
+  //it should fail here when x > maxVar(be) or x < maxVar(be) 
+      match be with
+      | And(be0,be1)            -> And(expand be0 x b, expand be1 x b)
+      | Or(be0,be1)             -> Or(expand be0 x b, expand be1 x b)
+      | Then(be0,be1)           -> Then(expand be0 x b, expand be1 x b)
+      | Iff(be0,be1)            -> Iff(expand be0 x b, expand be1 x b)
+      | Not(be0)                -> Not(expand be0 x b)
+      | B b0                    -> B b0
+      | X e when e = x          -> B b
+      | X e when e <> x         -> X e
+  //   | X e when x > e || x < e -> failwith "variable number x not found! because is out of bound in expand"          
+      | X ______                -> failwith "something went very wrong with x in expand. It is not out of bound but is bad!"
+     
+  let shannonExpand(be: BVarExpr) (x: int) = (expand be x true, expand be x false)
 
-
-   let mk (INF struct (i,lw,hg):Inf) (t:T) (h:H) =
-     if lw = hg then (Option.get lw,t,h) 
-     else if (H.isMember (INF struct (i,lw,hg)) h) then
-       let u = Option.get (H.lookup (INF struct (i,lw,hg)) h) in
-       (u,t,h)
-     else 
-       let (u,newT) = T.add (INF struct (i,lw,hg)) t  in 
-       printfn "u: %A" u  //there is a bug here
-       let newH     = H.insert (INF struct (i,lw,hg)) u h in 
-       (u,newT,newH)
+  //precondition: there is no variable number x in the BVarExpr
+  // it transform to a Boolean Expression that can be evaluated with eval
+  let rec bve2be = 
+   function
+   | And(be0,be1)    -> Conj(bve2be be0, bve2be be1)
+   | Or(be0,be1)     -> Disj(bve2be be0, bve2be be1)
+   | Then(be0,be1)   -> Imp(bve2be be0, bve2be be1)
+   | Iff(be0,be1)    -> BImp(bve2be be0, bve2be be1)
+   | Not(be0)        -> Neg(bve2be be0)
+   | B b0            -> Bl b0
+   | X _             -> failwith "we are not expecting variables x when converting to Boolean Expressions"
+              
+  let rec eval = 
+   function
+   | Conj(be0,be1) -> eval be0 && eval be1
+   | Disj(be0,be1) -> eval be0 || eval be1
+   | Imp(be0,be1)  -> (eval (Neg(be0)) ) || eval be1 
+   | BImp(be0,be1) -> (eval (Imp(be0,be1)) ) && (eval (Imp(be1,be0)) )
+   | Neg(be0)      -> not (eval be0)
+   | Bl b          -> b
 
 
-   let build (bve: BVarExpr) (n: int)  =
-    
+  let mk (INF struct (i,lw,hg):Inf) (t:T) (h:H) =
+   if lw = hg then (Option.get lw,t,h) 
+   else if (H.isMember (INF struct (i,lw,hg)) h) then
+     let u = Option.get (H.lookup (INF struct (i,lw,hg)) h) in
+     (u,t,h)
+   else 
+     let (u,newT) = T.add (INF struct (i,lw,hg)) t  in 
+     printfn "u: %A" u  //there is a bug here
+     let newH     = H.insert (INF struct (i,lw,hg)) u h in 
+     (u,newT,newH)
+
+
+  let build (bve: BVarExpr) (n: int)  =
+
     let  (t0,h0) : (T * H) = Map.ofList [], Map.ofList [] in
     let mutable (t,h) = T.init n t0, H.init n h0 
     let rec build' (bve0 : BVarExpr) (n0: int) (i0: int)  =
@@ -158,60 +158,70 @@ module BDD =
         h  <- h0
         (v,t,h)
     build' bve n 1 
+
+  let int2bool (u1 : int) (u2 : int) : bool * bool = 
+   let i2b = fun i -> (i <> 0) 
+   (i2b u1, i2b u2)
+
+  let b2i = fun b -> if b then 1 else 0 
+  let bool2int (b1: bool) (b2: bool) =
+   
+   (b2i b1, b2i b2)
+  //apply uses dynamic programming to apply a boolean operation 
+  //between two BDD's nodes
+  //precondition: tables t and h are not empty
+  let apply (op: bool -> bool -> BExpr) u1 u2 t h =
+   let mutable g : Map<int*int,int> = Map.ofList [] in
+   //let  (t00,h00) : (T * H) = Map.ofList [], Map.ofList [] in
+   //let (t0,h0) : (T * H) = T.init t0, H.init h0 //given a t init taking the last largest u in table T
+
+   let rec app u1 u2 t0 h0 =
+     if Map.containsKey (u1,u2) g then (Map.find (u1,u2) g, t0,h0)
+     else if (List.contains u1 [0;1] && List.contains u2 [0;1]) 
+     then 
+       let (b1,b2) = int2bool u1 u2 in 
+       let u = eval (op b1 b2)  |> b2i in
+       (u,t0,h0)
+     else if T.v(u1) t0 = T.v(u2) t0 then
+       let (low,t1,h1)  = app (Option.get (T.low u1 t0)) (Option.get(T.low u2 t0)) t0 h0 
+       let (high,t2,h2) = app (Option.get (T.high u1 t0)) (Option.get(T.high u2 t0)) t1 h1
+       
+       let (u,t3,h3) = mk (INF struct (T.v u1 t0,Some low,Some high)) t2 h2  in
+       g <- Map.add (u1,u2) u g 
+       
+       (u,t3,h3)
+     else if T.v(u1) t0 < T.v(u2) t0 then
+       let (low,t1,h1)  = app (Option.get (T.low u1 t0)) u2 t0 h0 
+       let (high,t2,h2) = app (Option.get (T.high u1 t0)) u2 t1 h1
+       
+       let (u,t3,h3) = mk(INF struct (T.v u1 t0, Some low, Some high)) t2 h2 in
+       g <- Map.add (u1,u2) u g 
+       
+       (u,t3,h3)
+     else 
+       let (low,t1,h1)  = app u1 (Option.get (T.low u2 t0)) t0 h0 
+       let (high,t2,h2) = app u1 (Option.get (T.high u2 t0)) t1 h1
+       
+       let (u,t3,h3) = mk (INF struct (T.v u2 t0, Some low, Some high)) t2 h2 in
+       g <- Map.add (u1,u2) u g 
+       
+       (u,t3,h3)
+
+   app u1 u2 t h
+
+ //restrict with an exponential running time
+  let restrict u j b t h =
+    let rec res u0 j0 b0 t0 h0 =
+      if      (T.v u t0) > j then (u,t0,h0)
+      else if (T.v u t0) < j then let (u1,t1,h1) = res (T.low u t0) j0 b0 t0 h0 in 
+                                  let (u2,t2,h2) = res (T.high u t0) j0 b0 t1 h1 in 
+                                  mk (INF struct(T.v u t0,Some (u1),Some (u2) )) t2 h2
+      else if b0 = 0         then res (T.low u t0) j0 b0 t0 h0
+      else res (T.high u t0) j0 b0 t0 h0
     
-   let int2bool (u1 : int) (u2 : int) : bool * bool = 
-     let i2b = fun i -> (i <> 0) 
-     (i2b u1, i2b u2)
-
-   let b2i = fun b -> if b then 1 else 0 
-   let bool2int (b1: bool) (b2: bool) =
-     
-     (b2i b1, b2i b2)
-   //apply uses dynamic programming to apply a boolean operation 
-   //between two BDD's nodes
-   //precondition: tables t and h are not empty
-   let apply (op: bool -> bool -> BExpr) u1 u2 t h =
-     let mutable g : Map<int*int,int> = Map.ofList [] in
-     //let  (t00,h00) : (T * H) = Map.ofList [], Map.ofList [] in
-     //let (t0,h0) : (T * H) = T.init t0, H.init h0 //given a t init taking the last largest u in table T
-
-     let rec app u1 u2 t0 h0 =
-       if Map.containsKey (u1,u2) g then (Map.find (u1,u2) g, t0,h0)
-       else if (List.contains u1 [0;1] && List.contains u2 [0;1]) 
-       then 
-         let (b1,b2) = int2bool u1 u2 in 
-         let u = eval (op b1 b2)  |> b2i in
-         (u,t0,h0)
-       else if T.v(u1) t0 = T.v(u2) t0 then
-         let (low,t1,h1)  = app (Option.get (T.low u1 t0)) (Option.get(T.low u2 t0)) t0 h0 
-         let (high,t2,h2) = app (Option.get (T.high u1 t0)) (Option.get(T.high u2 t0)) t1 h1
-         
-         let (u,t3,h3) = mk (INF struct (T.v u1 t0,Some low,Some high)) t2 h2  in
-         g <- Map.add (u1,u2) u g 
-         
-         (u,t3,h3)
-       else if T.v(u1) t0 < T.v(u2) t0 then
-         let (low,t1,h1)  = app (Option.get (T.low u1 t0)) u2 t0 h0 
-         let (high,t2,h2) = app (Option.get (T.high u1 t0)) u2 t1 h1
-         
-         let (u,t3,h3) = mk(INF struct (T.v u1 t0, Some low, Some high)) t2 h2 in
-         g <- Map.add (u1,u2) u g 
-         
-         (u,t3,h3)
-       else 
-         let (low,t1,h1)  = app u1 (Option.get (T.low u2 t0)) t0 h0 
-         let (high,t2,h2) = app u1 (Option.get (T.high u2 t0)) t1 h1
-         
-         let (u,t3,h3) = mk (INF struct (T.v u2 t0, Some low, Some high)) t2 h2 in
-         g <- Map.add (u1,u2) u g 
-         
-         (u,t3,h3)
-
-     app u1 u2 t h
-    
-
-   let hello name =
-      printfn "Hello %s" name
+    res u j b t h 
+  let hello name =
+    printfn "Hello %s" name
 
 
 module Plot =

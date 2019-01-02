@@ -5,8 +5,6 @@ open ROBDD
 open ROBDD.BDD
 open ROBDD.Types
 
-
-
 let ex01 = Or(Iff(X 1, X 2), X 3)
 
 let ex02 = expand ex01 1 true
@@ -74,4 +72,17 @@ let h2 : H = Map.ofArray [|((INF struct (6,None,None)))    ,0
 
 Plot.t2dot t2;; //a unique table with two bdds test4
 let (i,t3,h3)  = BDD.apply (fun x y -> Conj(Bl x,Bl y)) 5 6 t2 h2
-Plot.t2dot t3;; //test5
+Plot.t2dot t3;; //test05
+
+
+let t4 : T = Map.ofArray [|(0, (INF struct (8,None,None)))
+                         ; (1, (INF struct (8,None,None)))
+                         ; (2, (INF struct (5,Some(1),Some(0)) ))
+                         ; (3, (INF struct (4,Some(2),Some(0)) ))
+                         ; (4, (INF struct (4,Some(0),Some(2)) ))
+                         ; (5, (INF struct (3,Some(3),Some(4)) ))
+                         ; (6, (INF struct (2,Some(5),Some(0)) )) 
+                         ; (7, (INF struct (2,Some(0),Some(5)) ))
+                         ; (8, (INF struct (1,Some(6),Some(7)) ))
+                         ; (6, (INF struct (2,Some(3),Some(4)) ))|]
+
