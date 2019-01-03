@@ -211,15 +211,15 @@ module BDD =
 
  //restrict with an exponential running time
   let restrict u j b t h =
-    let rec res u0 j0 b0 t0 h0 =
-      if      (T.v u t0) > j then (u,t0,h0)
-      else if (T.v u t0) < j then let (u1,t1,h1) = res (T.low u t0) j0 b0 t0 h0 in 
-                                  let (u2,t2,h2) = res (T.high u t0) j0 b0 t1 h1 in 
-                                  mk (INF struct(T.v u t0,Some (u1),Some (u2) )) t2 h2
-      else if b0 = 0         then res (T.low u t0) j0 b0 t0 h0
-      else res (T.high u t0) j0 b0 t0 h0
+    let rec res u0 t0 h0 =
+      if      (T.v u0 t0) > j then (u0,t0,h0)
+      else if (T.v u0 t0) < j then let (u1,t1,h1) = res (Option.get (T.low u0 t0) ) t0 h0 in 
+                                   let (u2,t2,h2) = res (Option.get (T.high u0 t0)) t1 h1 in 
+                                   mk (INF struct(T.v u0 t0,Some (u1),Some (u2) )) t2 h2
+      else if b = 0         then res (Option.get (T.low u t0)) t0 h0
+      else res (Option.get (T.high u t0) ) t0 h0
     
-    res u j b t h 
+    res u t h 
   let hello name =
     printfn "Hello %s" name
 
