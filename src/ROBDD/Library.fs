@@ -3,13 +3,17 @@ namespace ROBDD
 open System
 
 module Types = 
-   type Inf  = INF of struct ( int * Option<int> * Option<int>)
-   type U    = int
+
+   type UId0 = Zero | One 
+   and  UId  = U of int
+   and  Inf  = INF of struct (int * UId * UId)    (* to the glory *)
+             | INF0 of struct (int * UId0 * UId0) (* to initialization *)
+   
    and  V    = int
    and  Low  = int
    and  High = int
-   and  T    = Map<U,Inf>
-   and  H    = Map<Inf,U>
+   and  T    = Map<UId,Inf>
+   and  H    = Map<Inf,UId>
 
    //boolean expression with variables
    type BVarExpr = | And  of BVarExpr * BVarExpr
@@ -30,44 +34,62 @@ module Types =
                | BImp of BExpr * BExpr 
                | Neg  of BExpr
                | Bl   of bool
+   let mkU i : UId = U i
+   let uid02i uid = if (uid = Zero) then U 0 else U 1
+   let uid2bool (U u1) (U u2 ) : bool * bool = 
+     let i2b = fun i -> (i <> 0) in
+     (i2b u1, i2b u2)
+   let b2uid = fun b -> if b then U 1 else U 0 
+   let bool2int (b1: bool) (b2: bool) =
+    (b2uid b1, b2uid b2)
 
 module T =
   open Types
   //T : Map<U,Inf>
   let init(i: int) (t: T) : T = 
-    let t0 : T = Map.add 0 (INF struct(i,None,None)) t in
-    let t1 : T = Map.add 1 (INF struct(i,None,None)) t0 in
+    let t0 : T = Map.add (U 0) (INF0 struct(i,Zero,Zero)) t in
+    let t1 : T = Map.add (U 1) (INF0 struct(i,One,One)) t0 in
     t1
 
   let add (inf : Inf) (t: T) = 
     //precondition: t is never empty. ALLWAYS CALL init :  int -> T -> T before calling ADD  
-    let u = (Map.toArray t) |> Array.map(fun (k,_v) -> k) 
-            |> Array.max //last entered u 
-    (u+1, Map.add (u+1) inf t)  
+    let (U u) = (Map.toArray t) |> Array.map(fun (k,_v) -> k) 
+              |> Array.max in //last entered u 
+    (U (u+1), Map.add (U (u+1)) inf t)  
 
-  let v (u: U) (m: T) = let (INF struct (v,_,_))  = Map.find u m in v
+  let v (u: UId) (m: T) = match Map.find u m with
+                          | (INF struct (v,_,_))  -> v 
+                          | (INF0 struct (v,_,_)) -> v
 
-  let low (u: U) (m : T) = let (INF struct (_,lw,_)) = Map.find u m in lw
+  let low (u: UId) (m : T) = match Map.find u m with
+                             | (INF struct (_,lw,_))  -> lw 
+                             | (INF0 struct (_,lw,_)) -> uid02i lw
 
-  let high (u: U) (m: T) = let (INF struct (_,_,hg)) = Map.find u m in hg
+  let high (u: UId) (m: T) = match Map.find u m with
+                             | (INF struct (_,_,hg)) -> hg
+                             | (INF0 struct (_,_,hg)) -> uid02i hg
+   
+  // wouln't be cool to have a function t2h s.t. given a t it returns an H?
+  //the problem with H is that the two first values: 0 and 1 have the same value
+  let t2h t = Map.foldBack (fun k v acc -> (v,k)::acc) t []  |> Map.ofList
 
 
 module H = 
   // H : (i,l,h) := U
   open Types
-  let initEmpty : H = Map.empty<Inf,U>  
+  let initEmpty : H = Map.empty<Inf,UId>  
 
   let isMember (inf: Inf) (h: H) : bool = Map.exists (fun inf' _ -> inf = inf') h
 
   let lookup (inf: Inf) (h : H)  = Map.tryFind inf h 
 
-  let insert (inf: Inf) (u: U) (h : H) : H = Map.add inf u h 
+  let insert (inf: Inf) (u: UId) (h : H) : H = Map.add inf u h 
 
-  let init i h : H = 
-    let h0 = insert (INF struct (i,None,None)) 0 h
+  let init i h : H = insert (INF0 struct (i,Zero,Zero)) (U 0) h
+                  |> insert (INF0 struct (i, One, One)) (U 1)
     //since for values 0 and 1 the key is identicall we only save the first one: 0
     //we could add 0 and 1 at the end such that i = 5 becomes 50 and 51 
-    h0
+    
 
 module BDD =
   open Types
@@ -84,7 +106,7 @@ module BDD =
    // construct the type
    B true
 
-  let mkTH = Map.empty<U,Inf> , Map.empty<Inf,U>  
+  let mkTH = Map.empty<UId,Inf> , Map.empty<Inf,UId>  
      
   //given a Boolean Expression be, a variable number x and a boolean b
   //bind x to b
@@ -126,83 +148,83 @@ module BDD =
    | Bl b          -> b
 
 
-  let mk (INF struct (i,lw,hg):Inf) (t:T) (h:H) =
-   if lw = hg then (Option.get lw,t,h) 
-   else if (H.isMember (INF struct (i,lw,hg)) h) then
-     let u = Option.get (H.lookup (INF struct (i,lw,hg)) h) in
-     (u,t,h)
-   else 
-     let (u,newT) = T.add (INF struct (i,lw,hg)) t  in 
-     printfn "u: %A" u  //there is a bug here
-     let newH     = H.insert (INF struct (i,lw,hg)) u h in 
-     (u,newT,newH)
-
+  let mk (inf) (t:T) (h:H) =
+    match inf with
+    | INF struct (i,lw,hg) -> 
+      if lw = hg then (lw,t,h) 
+      else if (H.isMember (INF struct (i,lw,hg)) h) then
+       let u0 = (H.lookup (INF struct (i,lw,hg)) h) in
+       let u1 = Option.get u0
+       
+       (u1,t,h)
+      else 
+       let (u,newT) = T.add (INF struct (i,lw,hg)) t  in 
+       
+       //printfn "u: %A" u  //there was a bug here
+       let newH     = H.insert (INF struct (i,lw,hg)) u h in 
+       (u,newT,newH)
+    | INF0 struct (i, Zero, Zero) -> (U 0,t,h)
+    | INF0 struct (i, One, One)   -> (U 1,t,h)
+    | INF0 (_) -> failwith "error: INF0 has an insolit structure"
 
   let build (bve: BVarExpr) (n: int)  =
 
     let  (t0,h0) : (T * H) = Map.ofList [], Map.ofList [] in
     let mutable (t,h) = T.init n t0, H.init n h0 
-    let rec build' (bve0 : BVarExpr) (n0: int) (i0: int)  =
+    let rec build' (bve0 : BVarExpr) (n0) (U i0)  =
       if i0 > n0 then 
         //printfn "variable i : %i" i0
        // printfn "variable bve : %A" bve0
         let b : bool = (bve2be >> eval ) bve0 
         //printfn "variable b: %A" b
-        if (not b) then (0,t,h) else (1,t,h)
+        if (not b) then (U 0,t,h) else (U 1,t,h)
       else 
-        let (u0,_,_) = build' (expand bve0 i0 false) n0 (i0+1) 
-        let (u1,_,_) = build' (expand bve0 i0 true ) n0 (i0+1) 
+        let (u0,_,_) = build' (expand bve0 i0 false) n0 (U (i0+1) ) 
+        let (u1,_,_) = build' (expand bve0 i0 true ) n0 (U (i0+1) ) 
         
-        let (v,t0,h0) =  mk (INF struct (i0,Some u0,Some u1)) t h
+        let (v,t0,h0) =  mk (INF struct (i0, u0, u1)) t h
         t  <- t0
         h  <- h0
         (v,t,h)
-    build' bve n 1 
+    build' bve n (U 1) 
 
-  let int2bool (u1 : int) (u2 : int) : bool * bool = 
-   let i2b = fun i -> (i <> 0) 
-   (i2b u1, i2b u2)
-
-  let b2i = fun b -> if b then 1 else 0 
-  let bool2int (b1: bool) (b2: bool) =
-   
-   (b2i b1, b2i b2)
+ 
   //apply uses dynamic programming to apply a boolean operation 
   //between two BDD's nodes
   //precondition: tables t and h are not empty
   let apply (op: bool -> bool -> BExpr) u1 u2 t h =
-   let mutable g : Map<int*int,int> = Map.ofList [] in
+   let mutable g : Map<UId*UId,UId> = Map.ofList [] in
    //let  (t00,h00) : (T * H) = Map.ofList [], Map.ofList [] in
    //let (t0,h0) : (T * H) = T.init t0, H.init h0 //given a t init taking the last largest u in table T
 
    let rec app u1 u2 t0 h0 =
      if Map.containsKey (u1,u2) g then (Map.find (u1,u2) g, t0,h0)
-     else if (List.contains u1 [0;1] && List.contains u2 [0;1]) 
+     else if (List.contains u1 [U 0;U 1] && List.contains u2 [U 0;U 1]) 
      then 
-       let (b1,b2) = int2bool u1 u2 in 
-       let u = eval (op b1 b2)  |> b2i in
+       let (b1,b2) = uid2bool u1 u2 in 
+       let u = eval (op b1 b2)  |> b2uid in
        (u,t0,h0)
-     else if T.v(u1) t0 = T.v(u2) t0 then
-       let (low,t1,h1)  = app (Option.get (T.low u1 t0)) (Option.get(T.low u2 t0)) t0 h0 
-       let (high,t2,h2) = app (Option.get (T.high u1 t0)) (Option.get(T.high u2 t0)) t1 h1
+     else if T.v (u1) t0 = T.v(u2) t0 then
+       let (low,t1,h1)  = app (T.low u1 t0) (T.low u2 t0) t0 h0 
+       let (high,t2,h2) = app (T.high u1 t0) (T.high u2 t0) t1 h1
        
-       let (u,t3,h3) = mk (INF struct (T.v u1 t0,Some low,Some high)) t2 h2  in
+       let (u,t3,h3) = mk (INF struct (T.v ( u1) t0, low, high)) t2 h2  in
        g <- Map.add (u1,u2) u g 
        
        (u,t3,h3)
      else if T.v(u1) t0 < T.v(u2) t0 then
-       let (low,t1,h1)  = app (Option.get (T.low u1 t0)) u2 t0 h0 
-       let (high,t2,h2) = app (Option.get (T.high u1 t0)) u2 t1 h1
+       let (low,t1,h1)  = app (T.low u1 t0) u2 t0 h0 
+       let (high,t2,h2) = app (T.high u1 t0) u2 t1 h1
        
-       let (u,t3,h3) = mk(INF struct (T.v u1 t0, Some low, Some high)) t2 h2 in
+       let (u,t3,h3) = mk(INF struct (T.v u1 t0, low,  high)) t2 h2 in
        g <- Map.add (u1,u2) u g 
        
        (u,t3,h3)
      else 
-       let (low,t1,h1)  = app u1 (Option.get (T.low u2 t0)) t0 h0 
-       let (high,t2,h2) = app u1 (Option.get (T.high u2 t0)) t1 h1
+       let (low,t1,h1)  = app u1  (T.low u2 t0) t0 h0 
+       let (high,t2,h2) = app u1  (T.high u2 t0) t1 h1
        
-       let (u,t3,h3) = mk (INF struct (T.v u2 t0, Some low, Some high)) t2 h2 in
+       let (u,t3,h3) = mk (INF struct (T.v u2 t0,  low,  high)) t2 h2 in
        g <- Map.add (u1,u2) u g 
        
        (u,t3,h3)
@@ -210,14 +232,16 @@ module BDD =
    app u1 u2 t h
 
  //restrict with an exponential running time
+ //singleton boolean assignment($[b/x_j], b \in {0,1} )
+ // it can be improved using dynamic programming
   let restrict u j b t h =
     let rec res u0 t0 h0 =
       if      (T.v u0 t0) > j then (u0,t0,h0)
-      else if (T.v u0 t0) < j then let (u1,t1,h1) = res (Option.get (T.low u0 t0) ) t0 h0 in 
-                                   let (u2,t2,h2) = res (Option.get (T.high u0 t0)) t1 h1 in 
-                                   mk (INF struct(T.v u0 t0,Some (u1),Some (u2) )) t2 h2
-      else if b = 0         then res (Option.get (T.low u t0)) t0 h0
-      else res (Option.get (T.high u t0) ) t0 h0
+      else if (T.v u0 t0) < j then let (u1,t1,h1) = res (T.low u0 t0)  t0 h0 in 
+                                   let (u2,t2,h2) = res (T.high u0 t0) t1 h1 in 
+                                   mk (INF struct(T.v u0 t0,(u1),(u2) )) t2 h2
+      else if b = 0         then res (T.low u t0) t0 h0
+      else res (T.high u t0) t0 h0
     
     res u t h 
   let hello name =
@@ -227,23 +251,25 @@ module BDD =
 module Plot =
   open Types
  
-  let tEntry2dotLine (u : int)  ((INF struct (i,olw,ohg )) as inf)  (dot: string) =
-    match u with 
-    | 0 -> dot + "graph { 1 [shape=box] 0 [shape=box] "
-    | 1 -> dot
-    | u1 -> 
-      let lw , hg = Option.get olw , Option.get ohg
+  let tEntry2dotLine (u)  (inf)  (dot: string) =
+    match inf with
+    | (INF struct (i,olw,ohg )) ->
+      match u with 
+      | U u1 -> 
+        let U lw ,U hg = olw , ohg
 
-      let labels = dot    + sprintf " %i [label=<X<SUB>%i</SUB>>,shape=circle, xlabel=%i] " u1 i u1  in
-      let lablow = labels + sprintf " %i -- %i [style=dashed]" u1 lw in
-      lablow + sprintf " %i -- %i " u1 hg
+        let labels = dot    + sprintf " %i [label=<X<SUB>%i</SUB>>,shape=circle, xlabel=%i] " u1 i u1  in
+        let lablow = labels + sprintf " %i -- %i [style=dashed]" u1 lw in
+        lablow + sprintf " %i -- %i " u1 hg
+    | (INF0 struct (i,Zero,Zero )) -> dot + "graph { 1 [shape=box] 0 [shape=box] "
+    | (INF0 struct (i,One,One ))   -> dot
+    | (INF0 _)                     -> 
+                             failwith "something went wrong in tEntry2dotLine INF0 struct is irrepresentable"
       
            
-      
- 
   let t2dot (t:T) : string =
     //iterate the map
-    let arr = Map.toArray t |> Array.sortBy (fun (k,_v) -> -k)
+    let arr = Map.toArray t |> Array.sortBy (fun (U k,_v) -> -k)
     let beg = Array.foldBack (fun (k, v) acc ->  (tEntry2dotLine k v acc) ) arr ""
     in beg + "}"
     //let result = Map.foldBack (fun k v acc ->  (tEntry2dotLine k v acc) ) t ""

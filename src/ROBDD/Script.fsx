@@ -1,7 +1,6 @@
 #load "Library.fs"
 open ROBDD
 
-
 open ROBDD.BDD
 open ROBDD.Types
 
@@ -23,26 +22,26 @@ let result01 = eval be01
 
 
 //lets create a bdd (fig7 from andersens paper)
-let t : T = Map.ofArray [|(0, (INF struct (5,None,None)))
-                    ; (1, (INF struct (5,None,None)))
-                    ; (2, (INF struct (4,Some(1),Some(0)) ))
-                    ; (3, (INF struct (4,Some(0),Some(1)) ))
-                    ; (4, (INF struct (3,Some(2),Some(3)) ))
-                    ; (5, (INF struct (2,Some(4),Some(0)) ))
-                    ; (6, (INF struct (2,Some(0),Some(4)) )) 
-                    ; (7, (INF struct (1,Some(5),Some(6)) ))|]
+let t : T = Map.ofArray [|(U 0, (INF0 struct (5,Zero,Zero)))
+                        ; (U 1, (INF0 struct (5,One,One)))
+                        ; (U 2, (INF struct (4,U 1, U 0) ))
+                        ; (U 3, (INF struct (4,U 0, U 1) ))
+                        ; (U 4, (INF struct (3,U 2, U 3) ))
+                        ; (U 5, (INF struct (2,U 4, U 0) ))
+                        ; (U 6, (INF struct (2,U 0, U 4) )) 
+                        ; (U 7, (INF struct (1,U 5, U 6) ))|]
 
 //probably we couls add 0 and 1 at the end ? not sure yet
-let h : H = Map.ofArray [|((INF struct (50,None,None))      ,0)
-                        ; ((INF struct (51,None,None))      ,1)
-                        ; ((INF struct (4,Some(1),Some(0)) ),2)
-                        ; ((INF struct (4,Some(0),Some(1)) ),3)
-                        ; ((INF struct (3,Some(2),Some(3)) ),4)
-                        ; ((INF struct (2,Some(4),Some(0)) ),5)
-                        ; ((INF struct (2,Some(0),Some(4)) ),6) 
-                        ; ((INF struct (1,Some(5),Some(6)) ),7)|]
+let h : H = Map.ofArray [|((INF0 struct (5,Zero,Zero)) ,U 0)
+                        ; ((INF0 struct (5,One,One))   ,U 1)
+                        ; ((INF  struct (4,U 1,U 0)),U 2)
+                        ; ((INF  struct (4,U 0,U 1)),U 3)
+                        ; ((INF  struct (3,U 2,U 3)),U 4)
+                        ; ((INF  struct (2,U 4,U 0)),U 5)
+                        ; ((INF  struct (2,U 0,U 4)),U 6) 
+                        ; ((INF  struct (1,U 5,U 6)),U 7)|]
    
-let Some (t0) = H.lookup (INF struct (50,None,None)) h 
+let Some (t0) = H.lookup (INF0 struct (5,Zero,Zero)) h 
 
 //let us test the build function
 let (h0,t0) : H * T = (Map.ofList [], Map.ofList [])
@@ -54,35 +53,52 @@ Plot.t2dot t1;;
 
 // let us excercise the super powers of apply
 
-let t2 : T = Map.ofArray [|(0, (INF struct (6,None,None)))
-                    ; (1, (INF struct (6,None,None)))
-                    ; (2, (INF struct (3,Some(0),Some(1)) ))
-                    ; (3, (INF struct (2,Some(1),Some(0)) ))
-                    ; (4, (INF struct (2,Some(0),Some(1)) ))
-                    ; (5, (INF struct (1,Some(0),Some(2)) ))
-                    ; (6, (INF struct (1,Some(3),Some(4)) )) |]
+let t2 : T = Map.ofArray [|(U 0, (INF0 struct (6,Zero,Zero)))
+                         ; (U 1, (INF0 struct (6,One,One)))
+                         ; (U 2, (INF  struct (3,U 0,U 1) ))
+                         ; (U 3, (INF  struct (2,U 1,U 0) ))
+                         ; (U 4, (INF  struct (2,U 0,U 1) ))
+                         ; (U 5, (INF  struct (1,U 0,U 2) ))
+                         ; (U 6, (INF  struct (1,U 3,U 4) )) |]
                   //  ; (7, (INF struct (1,Some(5),Some(6)) ))|]
-let h2 : H = Map.ofArray [|((INF struct (6,None,None)))    ,0
-                         ; ((INF struct (6,None,None)))    ,1
-                         ; ((INF struct (3,Some(0),Some(1)),2 ))
-                         ; ((INF struct (2,Some(1),Some(0)),3 ))
-                         ; ((INF struct (2,Some(0),Some(1)),4 ))
-                         ; ((INF struct (1,Some(0),Some(2)),5 ))
-                         ; ((INF struct (1,Some(3),Some(4)),6 )) |]
+let h2 : H = Map.ofArray [|((INF0 struct (6,Zero,Zero))), U 0
+                         ; ((INF0 struct (6,One,One)))  , U 1
+                         ; ((INF struct (3,U 0, U 1)    , U 2 ))
+                         ; ((INF struct (2,U 1, U 0)    , U 3 ))
+                         ; ((INF struct (2,U 0, U 1)    , U 4 ))
+                         ; ((INF struct (1,U 0, U 2)    , U 5 ))
+                         ; ((INF struct (1,U 3, U 4)    , U 6 )) |]
 
 Plot.t2dot t2;; //a unique table with two bdds test4
-let (i,t3,h3)  = BDD.apply (fun x y -> Conj(Bl x,Bl y)) 5 6 t2 h2
+let (i,t3,h3)  = BDD.apply (fun x y -> Conj(Bl x,Bl y)) (U 5) (U 6) t2 h2
 Plot.t2dot t3;; //test05
 
 
-let t4 : T = Map.ofArray [|(0, (INF struct (8,None,None)))
-                         ; (1, (INF struct (8,None,None)))
-                         ; (2, (INF struct (5,Some(1),Some(0)) ))
-                         ; (3, (INF struct (4,Some(2),Some(0)) ))
-                         ; (4, (INF struct (4,Some(0),Some(2)) ))
-                         ; (5, (INF struct (3,Some(3),Some(4)) ))
-                         ; (6, (INF struct (2,Some(5),Some(0)) )) 
-                         ; (7, (INF struct (2,Some(0),Some(5)) ))
-                         ; (8, (INF struct (1,Some(6),Some(7)) ))
-                         ; (6, (INF struct (2,Some(3),Some(4)) ))|]
+let t4 : T = Map.ofArray [|(U 0, (INF0 struct (8,Zero,Zero)))
+                         ; (U 1, (INF0 struct (8,One,One)  ))
+                         ; (U 2, (INF  struct (5,U 1, U 0) ))
+                         ; (U 3, (INF  struct (4,U 2, U 0) ))
+                         ; (U 4, (INF  struct (4,U 0, U 2) ))
+                         ; (U 5, (INF  struct (3,U 3, U 4) ))
+                         ; (U 6, (INF  struct (2,U 5, U 0) )) 
+                         ; (U 7, (INF  struct (2,U 0, U 5) ))
+                         ; (U 8, (INF  struct (1,U 6, U 7) ))
+                         ; (U 6, (INF  struct (2,U 3, U 4) ))|]
 
+// let us test restrict 
+let t5 : T = Map.ofArray [|(U 0, (INF0 struct (5,Zero,Zero) ))
+                         ; (U 1, (INF0 struct (5,One, One)  ))
+                         ; (U 2, (INF struct (3,U 0,U 1)    ))
+                         ; (U 3, (INF struct (2,U 1,U 2)    ))
+                         ; (U 4, (INF struct (2,U 2,U 1)    ))
+                         ; (U 5, (INF struct (1,U 3,U 4)    ))|]
+// and ensure we are doing what we are supposed to do...
+Plot.t2dot t5
+//and yes, in test06.svg we show a cool result of the boolean expression:
+// (x1  <=> x2) \/ x3
+
+let (u6,t6,h6) = 
+  let h = T.t2h t5 in BDD.restrict (U 0) 2 0 t5 h //yea, this requires an H table and it seems to me that this 0 at the begining is unnecessary
+T.t2h t5
+
+Plot.t2dot t6;;
