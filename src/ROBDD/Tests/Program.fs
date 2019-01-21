@@ -36,4 +36,14 @@ module Program =
     let (i,t3,h3)  = BDD.apply (fun x y -> Conj(Bl x,Bl y)) (U 5) (U 6) t2 h2
       //We run our properties here...
       //Property.print Tests.propReverse
+
+    let t5 : T = Map.ofArray [|(U 0, (INF0 struct (5,Zero,Zero) ))
+                             ; (U 1, (INF0 struct (5,One, One)  ))
+                             ; (U 2, (INF struct (3,U 0,U 1)    ))
+                             ; (U 3, (INF struct (2,U 1,U 2)    ))
+                             ; (U 4, (INF struct (2,U 2,U 1)    ))
+                             ; (U 5, (INF struct (1,U 3,U 4)    ))|]
+    
+    let (u6,t6,h6) = BDD.restrict (U 5) 2 0 t5
+
     0

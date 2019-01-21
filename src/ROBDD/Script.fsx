@@ -73,7 +73,6 @@ Plot.t2dot t2;; //a unique table with two bdds test4
 let (i,t3,h3)  = BDD.apply (fun x y -> Conj(Bl x,Bl y)) (U 5) (U 6) t2 h2
 Plot.t2dot t3;; //test05
 
-
 let t4 : T = Map.ofArray [|(U 0, (INF0 struct (8,Zero,Zero)))
                          ; (U 1, (INF0 struct (8,One,One)  ))
                          ; (U 2, (INF  struct (5,U 1, U 0) ))
@@ -97,8 +96,8 @@ Plot.t2dot t5
 //and yes, in test06.svg we show a cool result of the boolean expression:
 // (x1  <=> x2) \/ x3
 
-let (u6,t6,h6) = 
-  let h = T.t2h t5 in BDD.restrict (U 0) 2 0 t5 h //yea, this requires an H table and it seems to me that this 0 at the begining is unnecessary
-T.t2h t5
+let (u6,t6,h6) = BDD.restrict (U 5) 2 0 t5
+ // BDD.restrict (U 0) 2 0 t5 //yea, this requires an H table and it seems to me that this 0 at the begining is unnecessary
+
 
 Plot.t2dot t6;;

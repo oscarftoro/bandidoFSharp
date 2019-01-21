@@ -208,7 +208,7 @@ module BDD =
        let (low,t1,h1)  = app (T.low u1 t0) (T.low u2 t0) t0 h0 
        let (high,t2,h2) = app (T.high u1 t0) (T.high u2 t0) t1 h1
        
-       let (u,t3,h3) = mk (INF struct (T.v ( u1) t0, low, high)) t2 h2  in
+       let (u,t3,h3) = mk (INF struct (T.v u1 t0, low, high)) t2 h2  in
        g <- Map.add (u1,u2) u g 
        
        (u,t3,h3)
@@ -234,16 +234,53 @@ module BDD =
  //restrict with an exponential running time
  //singleton boolean assignment($[b/x_j], b \in {0,1} )
  // it can be improved using dynamic programming
-  let restrict u j b t h =
-    let rec res u0 t0 h0 =
-      if      (T.v u0 t0) > j then (u0,t0,h0)
-      else if (T.v u0 t0) < j then let (u1,t1,h1) = res (T.low u0 t0)  t0 h0 in 
-                                   let (u2,t2,h2) = res (T.high u0 t0) t1 h1 in 
-                                   mk (INF struct(T.v u0 t0,(u1),(u2) )) t2 h2
-      else if b = 0         then res (T.low u t0) t0 h0
-      else res (T.high u t0) t0 h0
+  let restrict u j b t =
     
-    res u t h 
+    // give me a T to build a result tr table,
+    let tr = let (U i) = u in T.init i (Map.ofList [])
+    //an H to pass to mk called hr
+    let hr = T.t2h tr
+
+    // and I'll restrict a BDD using tr and hr
+    let rec res u0 t0 h0  =
+      if      (T.v u0 t) > j then (u0,t0,h0)
+      else if (T.v u0 t) < j then 
+        let (low,t1,h1)  = res (T.low u0 t)  t0 h0 in 
+        let (high,t2,h2) = res (T.high u0 t) t1 h1 in 
+        
+        mk(INF struct(T.v u0 t,low,high )) t2 h2
+  
+      else if b = 0           then res (T.low u0 t) t0 h0 
+      else res (T.high u0 t) t0 h0 
+    res u tr hr
+
+
+  //Hypothesis1: we have to delete the n node, from the table
+  //we add everything to the table t and we delete manually the nodes involved
+  //in the process
+
+  let restrict2 u j b t =
+    
+    // give me a T to build a result tr table,
+    //an H to pass to mk called hr
+    let hr = T.t2h t
+
+    // and I'll restrict a BDD using tr and hr
+    // THAT IS FUCKING CORRRRRRRRRRECT!!!
+    // the algorithm is missing the part where the old 
+    // nodes are deleted from the table
+    
+    let rec res u0 t0 h0  =
+      if      (T.v u0 t0) > j then (u0,t0,h0)
+      else if (T.v u0 t0) < j then 
+        let (low,t1,h1)  = res (T.low u0 t)  t0 h0 in 
+        let (high,t2,h2) = res (T.high u0 t) t1 h1 in 
+        
+        mk(INF struct(T.v u0 t,low,high )) t2 h2
+  
+      else if b = 0           then res (T.low u0 t) t0 h0 
+      else res (T.high u0 t) t0 h0 
+    res u t hr
   let hello name =
     printfn "Hello %s" name
 
@@ -264,7 +301,7 @@ module Plot =
     | (INF0 struct (i,Zero,Zero )) -> dot + "graph { 1 [shape=box] 0 [shape=box] "
     | (INF0 struct (i,One,One ))   -> dot
     | (INF0 _)                     -> 
-                             failwith "something went wrong in tEntry2dotLine INF0 struct is irrepresentable"
+                             failwith "something went wrong in tEntry2dotLine INF0 struct tuple is irrepresentable"
       
            
   let t2dot (t:T) : string =

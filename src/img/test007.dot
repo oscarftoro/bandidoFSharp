@@ -1,0 +1,1 @@
+graph { 1 [shape=box] 0 [shape=box]  2 [label=<X<SUB>1</SUB>>,shape=circle, xlabel=2]  2 -- 1 [style=dashed] 2 -- 2 }
