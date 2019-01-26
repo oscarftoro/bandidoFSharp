@@ -46,4 +46,15 @@ module Program =
     
     let (u6,t6,h6) = BDD.restrict (U 5) 2 0 t5
 
+    let t7 : T = Map.ofArray [|(U 0, (INF0 struct (6,Zero,Zero) ))
+                         ; (U 1, (INF0 struct (6,One, One)  ))
+                         ; (U 2, (INF struct (3,U 0,U 1)    ))
+                         ; (U 3, (INF struct (3,U 1,U 0)    ))
+                         ; (U 4, (INF struct (2,U 0,U 2)    ))
+                         ; (U 5, (INF struct (2,U 3,U 2)    ))
+                         ; (U 6, (INF struct (1,U 4,U 5)    ))|]
+
+    let (u8,t8,h8) = BDD.restrict3 (U 6) 2 1 t7
+
+    
     0

@@ -96,8 +96,38 @@ Plot.t2dot t5
 //and yes, in test06.svg we show a cool result of the boolean expression:
 // (x1  <=> x2) \/ x3
 
-let (u6,t6,h6) = BDD.restrict (U 5) 2 0 t5
+let (u6,t6,h6) = BDD.restrict2 (U 5) 2 0 t5
  // BDD.restrict (U 0) 2 0 t5 //yea, this requires an H table and it seems to me that this 0 at the begining is unnecessary
 
 
 Plot.t2dot t6;;
+
+// from symbolic boolean manipulation with Ordered Binary Decision Diagrams
+// page 14
+let t7 : T = Map.ofArray [|(U 0, (INF0 struct (6,Zero,Zero) ))
+                         ; (U 1, (INF0 struct (6,One, One)  ))
+                         ; (U 2, (INF struct (3,U 0,U 1)    ))
+                         ; (U 3, (INF struct (3,U 1,U 0)    ))
+                         ; (U 4, (INF struct (2,U 0,U 2)    ))
+                         ; (U 5, (INF struct (2,U 3,U 2)    ))
+                         ; (U 6, (INF struct (1,U 4,U 5)    ))|]
+
+
+Plot.t2dot t7;;
+
+
+let (u8,t8,h8) = BDD.restrict3 (U 6) 2 1 t7
+
+Plot.t2dot t8;;
+
+//testing the error
+// u0 = U 4
+let tm = 
+  Map.ofList [(U 0, INF0 struct (6, Zero, Zero))
+            ; (U 1, INF0 struct (6, One, One))
+            ; (U 2, INF  struct (3, U 0, U 1))
+            ; (U 3, INF  struct (3, U 1, U 0))
+            ; (U 4, INF  struct (2, U 0, U 2))
+            ; (U 5, INF  struct (2, U 3, U 2))
+            ; (U 6, INF  struct (1, U 4, U 5))]
+ 

@@ -6,12 +6,13 @@ module Types =
 
    type UId0 = Zero | One 
    and  UId  = U of int
-   and  Inf  = INF of struct (int * UId * UId)    (* to the glory *)
-             | INF0 of struct (int * UId0 * UId0) (* to initialization *)
-   
    and  V    = int
-   and  Low  = int
-   and  High = int
+   and  Low  = UId
+   and  High = UId
+   and  Inf  = INF of struct (V * Low * High)    (* to the glory *)
+             | INF0 of struct (V * UId0 * UId0) (* to initialization *)
+   
+  
    and  T    = Map<UId,Inf>
    and  H    = Map<Inf,UId>
 
@@ -260,27 +261,77 @@ module BDD =
   //in the process
 
   let restrict2 u j b t =
-    
-    // give me a T to build a result tr table,
-    //an H to pass to mk called hr
     let hr = T.t2h t
 
-    // and I'll restrict a BDD using tr and hr
-    // THAT IS FUCKING CORRRRRRRRRRECT!!!
-    // the algorithm is missing the part where the old 
-    // nodes are deleted from the table
-    
     let rec res u0 t0 h0  =
-      if      (T.v u0 t0) > j then (u0,t0,h0)
+      let (U high), (U low)  =  (T.high u0 t0),  (T.low u0 t0) 
+      
+      if      (T.v u0 t0) > j then 
+        printfn "la t0 %A" t0
+        printfn "la puta u0 %A" u0
+        let t1 = Map.remove u0 t0 in 
+        let h1 = T.t2h t1  in
+        (u0,t0,h0)
       else if (T.v u0 t0) < j then 
-        let (low,t1,h1)  = res (T.low u0 t)  t0 h0 in 
+        let (currlow,t1,h1)  = res (T.low u0 t0)  t0 h0 in 
+        let (currhigh,t2,h2) = res (T.high u0 t1) t1 h1 in 
+
+        let t3 = Map.remove u0 t2                   in (* remove the node u0 *)
+        let h3 = T.t2h t3                           in 
+        
+        mk(INF struct(T.v u0 t0,currlow,currhigh )) t3 h3
+  
+      else if b = 0 then 
+        
+        let t1 = Map.remove u0 t0 (* remove the node u0*)
+        let t2 = let (U k) = u0
+                 let  f = match  k with 
+                                 | 0 | 1 -> fun (U k) _v -> (k <> 1 || k <> 0 )
+                                 | _     -> fun (U k) _v -> (k <> high) in 
+                 Map.filter f t1
+        let h2 = T.t2h t2        (* and also remove the high branch*)
+
+        res (U low) t2 h2
+      else 
+ 
+        let t1 = Map.remove u0 t0 (* remove the node u0 *)       
+        let t2 = let (U k) = u0
+                 let  f = match  k with 
+                                 | 0 | 1 -> fun (U k) _v -> (k <> 1 || k <> 0 )
+                                 | _     -> fun (U k) _v -> (k <> low) in     
+                  Map.filter f t1 (* and also remove the low branch and update h0 accordingly *) 
+                   
+        let h2 = T.t2h t1     
+       
+        res (T.high u0 t0) t1 h2 (* but use the old version (t0) to find the high *)
+    res u t hr
+
+  //computing restriction to a function is straightforward
+  // according to Randal E. Bryant
+
+  let restrict3 u j b t = 
+  
+    let (U maxVar) = u
+    let tRes = Map.ofList [] |> T.init maxVar
+    let h = T.t2h tRes
+
+    let rec res u0 t0 h0  =
+      match T.v u0 t with
+      | i when i > j -> (u0,t0,h0)
+      | i when i < j ->
+        let (low,t1,h1)  = res (T.low u0 t)  t0 h0  in 
         let (high,t2,h2) = res (T.high u0 t) t1 h1 in 
         
         mk(INF struct(T.v u0 t,low,high )) t2 h2
-  
-      else if b = 0           then res (T.low u0 t) t0 h0 
-      else res (T.high u0 t) t0 h0 
-    res u t hr
+      | _ -> match b with
+             | 0 -> res (T.low u0 t) t0 h0
+             | 1 -> res (T.high u0 t) t0 h0
+             | _ -> failwith ("this should never happen, b is setted to something else than 0 or 1")
+
+    res u tRes h 
+
+
+
   let hello name =
     printfn "Hello %s" name
 
