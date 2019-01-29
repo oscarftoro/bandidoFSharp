@@ -96,7 +96,7 @@ Plot.t2dot t5
 //and yes, in test06.svg we show a cool result of the boolean expression:
 // (x1  <=> x2) \/ x3
 
-let (u6,t6,h6) = BDD.restrict2 (U 5) 2 0 t5
+let (u6,t6,h6) = BDD.restrict3 (U 5) 2 0 t5
  // BDD.restrict (U 0) 2 0 t5 //yea, this requires an H table and it seems to me that this 0 at the begining is unnecessary
 
 
