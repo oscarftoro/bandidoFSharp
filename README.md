@@ -3,7 +3,24 @@ Bandido is a library that partially implements Binary Decition Diagrams in FShar
 
 
 ## What is implemented
-Make, Build, Apply and Restrict algorithms are currently implemented. 
+Make, Build, Apply and Restrict algorithms are currently implemented. A rudimentary visualisation capability is 
+also available. Given a table t, the function Plot.t2dot t will translate the table into a dot graph that can be
+compiled into a picture. Several cases of use are showed in Script.fsx and a set of tests are implemented in the Test folder.
+
+## Build
+The project requires dotnet core 2.0.
+
+To compile, ensure to be placed into the src/ROBDD folder and type into the console:
+
+
+```bash
+dotnet build
+```
+
+to test, go to the Test folder and type:
+```bash
+dotnet test
+```
 
 ## References
 
