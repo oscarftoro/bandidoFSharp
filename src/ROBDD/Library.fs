@@ -232,46 +232,22 @@ module BDD =
 
    app u1 u2 t h
 
- //restrict with an exponential running time
- //singleton boolean assignment($[b/x_j], b \in {0,1} )
- // it can be improved using dynamic programming
-  let restrict u j b t =
-    
-    // give me a T to build a result tr table,
-    let tr = let (U i) = u in T.init i (Map.ofList [])
-    //an H to pass to mk called hr
-    let hr = T.t2h tr
-
-    // and I'll restrict a BDD using tr and hr
-    let rec res u0 t0 h0  =
-      if      (T.v u0 t) > j then (u0,t0,h0)
-      else if (T.v u0 t) < j then 
-        let (low,t1,h1)  = res (T.low u0 t)  t0 h0 in 
-        let (high,t2,h2) = res (T.high u0 t) t1 h1 in 
-        
-        mk(INF struct(T.v u0 t,low,high )) t2 h2
-  
-      else if b = 0           then res (T.low u0 t) t0 h0 
-      else res (T.high u0 t) t0 h0 
-    res u tr hr
-
-
-  //Hypothesis1: we have to delete the n node, from the table
-  //we add everything to the table t and we delete manually the nodes involved
-  //in the process
-
-  
+ 
   //computing restriction to a function is straightforward
-  // according to Randal E. Bryant
+  //according to Randal E. Bryant; I desagree
+
+  //restrict with an exponential running time
+  //singleton boolean assignment($[b/x_j], b \in {0,1} )
+  // it can be improved using dynamic programming
 
   let restrict3 u j b t = 
-  
+    //precondition: b is either 1 or 0
     let (U maxVar) = u
-    let tRes = Map.ofList [] |> T.init maxVar
-    let h = T.t2h tRes
+    let tRes = Map.ofList [] |> T.init maxVar // give me a T to build a result tr table,
+    let hRes = T.t2h tRes   //an H to pass to mk called hRes
 
     let rec res u0 t0 h0  =
-
+      // updates table t1 and h1 with value u0 from table t
       let update t1 h1 u0 = 
         let tr = Map.add u0 (Map.find u0 t) t1    in
         let hr = Map.add (Map.find u0 t) u0 h1    in
@@ -286,21 +262,14 @@ module BDD =
         let (high,t2,h2) = res (T.high u0 t) t15 h15 in 
         let t25, h25 = update t2 h2 high
      
-        //let ru, rt, rh = 
         mk(INF struct(T.v u0 t,low,high )) t25 h25
         
-        (* update T and H accordingly *)
-        //let rt1, rh1 = update rt rh ru
-        //(ru, rt1, rh1)
-
       | _ -> match b with
              | 0 -> res (T.low u0 t) t0 h0
              | 1 -> res (T.high u0 t) t0 h0
              | _ -> failwith ("this should never happen, b is setted to something else than 0 or 1")
 
-    res u tRes h 
-
-
+    res u tRes hRes 
 
   let hello name =
     printfn "Hello %s" name
