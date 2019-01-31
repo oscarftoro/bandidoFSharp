@@ -4,7 +4,8 @@ open System
 
 module Types = 
 
-   type UId0 = Zero | One 
+   type UId0 =   Zero 
+               | One 
    and  UId  = U of int
    and  V    = int
    and  Low  = UId
@@ -29,12 +30,12 @@ module Types =
    type BVE = { maxX : int ; bve: BVarExpr }
 
   //when an expression is shannon expanded is a boolean expression
-   type BExpr = Conj  of BExpr * BExpr
-               | Disj of BExpr * BExpr 
-               | Imp  of BExpr * BExpr 
-               | BImp of BExpr * BExpr 
-               | Neg  of BExpr
-               | Bl   of bool
+   type BExpr =   Conj  of BExpr * BExpr
+                | Disj of BExpr * BExpr 
+                | Imp  of BExpr * BExpr 
+                | BImp of BExpr * BExpr 
+                | Neg  of BExpr
+                | Bl   of bool
    let mkU i : UId = U i
    let uid02i uid = if (uid = Zero) then U 0 else U 1
    let uid2bool (U u1) (U u2 ) : bool * bool = 
@@ -72,7 +73,7 @@ module T =
    
   // wouln't be cool to have a function t2h s.t. given a t it returns an H?
   //the problem with H is that the two first values: 0 and 1 have the same value
-  let t2h t = Map.foldBack (fun k v acc -> (v,k)::acc) t []  |> Map.ofList
+  let t2h t = Map.foldBack (fun k v acc -> (v, k)::acc) t []  |> Map.ofList
 
 
 module H = 
@@ -98,16 +99,16 @@ module BDD =
   open H 
 
   let mkAnd be0 be1 =  And(be0, be1)
-  let mfOr be0 be1 = Or(be0,be1)
-  let mkThen be0 be1 = Then(be0,be1)
-  let mkIff be0 be1 = Iff(be0,be1)
+  let mfOr be0 be1 = Or(be0, be1)
+  let mkThen be0 be1 = Then(be0, be1)
+  let mkIff be0 be1 = Iff(be0, be1)
   let mkNot be0 = Not be0
   let mkBVE be0 = 
    //check the biggest x in be0
    // construct the type
    B true
 
-  let mkTH = Map.empty<UId,Inf> , Map.empty<Inf,UId>  
+  let mkTH = (Map.empty<UId, Inf>, Map.empty<Inf, UId>)  
      
   //given a Boolean Expression be, a variable number x and a boolean b
   //bind x to b
@@ -129,56 +130,54 @@ module BDD =
 
   //precondition: there is no variable number x in the BVarExpr
   // it transform to a Boolean Expression that can be evaluated with eval
-  let rec bve2be = 
-   function
-   | And(be0,be1)    -> Conj(bve2be be0, bve2be be1)
-   | Or(be0,be1)     -> Disj(bve2be be0, bve2be be1)
-   | Then(be0,be1)   -> Imp(bve2be be0, bve2be be1)
-   | Iff(be0,be1)    -> BImp(bve2be be0, bve2be be1)
-   | Not(be0)        -> Neg(bve2be be0)
-   | B b0            -> Bl b0
-   | X _             -> failwith "we are not expecting variables x when converting to Boolean Expressions"
+  let rec bve2be = function
+    | And(be0,be1)    -> Conj(bve2be be0, bve2be be1)
+    | Or(be0,be1)     -> Disj(bve2be be0, bve2be be1)
+    | Then(be0,be1)   -> Imp(bve2be be0, bve2be be1)
+    | Iff(be0,be1)    -> BImp(bve2be be0, bve2be be1)
+    | Not(be0)        -> Neg(bve2be be0)
+    | B b0            -> Bl b0
+    | X _             -> failwith "we are not expecting variables x when converting to Boolean Expressions"
               
-  let rec eval = 
-   function
-   | Conj(be0,be1) -> eval be0 && eval be1
-   | Disj(be0,be1) -> eval be0 || eval be1
-   | Imp(be0,be1)  -> (eval (Neg(be0)) ) || eval be1 
-   | BImp(be0,be1) -> (eval (Imp(be0,be1)) ) && (eval (Imp(be1,be0)) )
-   | Neg(be0)      -> not (eval be0)
-   | Bl b          -> b
+  let rec eval = function
+    | Conj(be0, be1) -> eval be0 && eval be1
+    | Disj(be0, be1) -> eval be0 || eval be1
+    | Imp(be0, be1)  -> (eval (Neg(be0)) ) || eval be1 
+    | BImp(be0, be1) -> (eval (Imp(be0, be1)) ) && (eval (Imp(be1, be0)) )
+    | Neg(be0)       -> not (eval be0)
+    | Bl b           -> b
 
 
   let mk (inf) (t:T) (h:H) : UId * T * H =
     match inf with
     | INF struct (i,lw,hg) -> 
-      if lw = hg then (lw,t,h) 
-      else if (H.isMember (INF struct (i,lw,hg)) h) then
-       let u0 = (H.lookup (INF struct (i,lw,hg)) h) in
-       let u1 = Option.get u0
-       
-       (u1,t,h)
-      else 
-       let (u,newT) = T.add (INF struct (i,lw,hg)) t  in 
-       
-       //printfn "u: %A" u
-       let newH     = H.insert (INF struct (i,lw,hg)) u h in 
-       (u,newT,newH)
-    | INF0 struct (i, Zero, Zero) -> (U 0,t,h)
-    | INF0 struct (i, One, One)   -> (U 1,t,h)
+        if lw = hg then (lw, t, h) 
+        else if (H.isMember (INF struct (i,lw,hg)) h) then
+         let u0 = (H.lookup (INF struct (i,lw,hg)) h) in
+         let u1 = Option.get u0
+         
+         (u1, t, h)
+        else 
+         let (u,newT) = T.add (INF struct (i,lw,hg)) t  in 
+         
+         //printfn "u: %A" u
+         let newH     = H.insert (INF struct (i,lw,hg)) u h in 
+         (u, newT, newH)
+    | INF0 struct (i, Zero, Zero) -> (U 0, t, h)
+    | INF0 struct (i, One, One)   -> (U 1, t, h)
     | INF0 (_) -> failwith "error: INF0 has an insolit structure"
 
   let build (bve: BVarExpr) (n: int)  =
 
-    let  (t0,h0) : (T * H) = Map.ofList [], Map.ofList [] in
-    let mutable (t,h) = T.init n t0, H.init n h0 
+    let  (t0,h0) : (T * H) = (Map.ofList [], Map.ofList []) in
+    let mutable (t,h) = (T.init n t0, H.init n h0)
     let rec build' (bve0 : BVarExpr) (n0) (U i0)  =
       if i0 > n0 then 
         //printfn "variable i : %i" i0
        // printfn "variable bve : %A" bve0
         let b : bool = (bve2be >> eval ) bve0 
         //printfn "variable b: %A" b
-        if (not b) then (U 0,t,h) else (U 1,t,h)
+        if (not b) then (U 0, t, h) else (U 1, t, h)
       else 
         let (u0,_,_) = build' (expand bve0 i0 false) n0 (U (i0+1) ) 
         let (u1,_,_) = build' (expand bve0 i0 true ) n0 (U (i0+1) ) 
@@ -186,10 +185,9 @@ module BDD =
         let (v,t0,h0) =  mk (INF struct (i0, u0, u1)) t h
         t  <- t0
         h  <- h0
-        (v,t,h)
+        (v, t, h)
     build' bve n (U 1) 
 
- 
   //apply uses dynamic programming to apply a boolean operation 
   //between two BDD's nodes
   //precondition: tables t and h are not empty
@@ -199,36 +197,36 @@ module BDD =
    //let (t0,h0) : (T * H) = T.init t0, H.init h0 //given a t init taking the last largest u in table T
 
    let rec app u1 u2 t0 h0 =
-     if Map.containsKey (u1,u2) g then (Map.find (u1,u2) g, t0,h0)
+     if Map.containsKey (u1,u2) g then (Map.find (u1, u2) g, t0, h0)
      else if (List.contains u1 [U 0;U 1] && List.contains u2 [U 0;U 1]) 
      then 
        let (b1,b2) = uid2bool u1 u2 in 
        let u = eval (op b1 b2)  |> b2uid in
-       (u,t0,h0)
+       (u, t0, h0)
      else if T.v (u1) t0 = T.v(u2) t0 then
        let (low,t1,h1)  = app (T.low u1 t0) (T.low u2 t0) t0 h0 
        let (high,t2,h2) = app (T.high u1 t0) (T.high u2 t0) t1 h1
        
        let (u,t3,h3) = mk (INF struct (T.v u1 t0, low, high)) t2 h2  in
-       g <- Map.add (u1,u2) u g 
+       g <- Map.add (u1, u2) u g 
        
-       (u,t3,h3)
+       (u, t3, h3)
      else if T.v(u1) t0 < T.v(u2) t0 then
        let (low,t1,h1)  = app (T.low u1 t0) u2 t0 h0 
        let (high,t2,h2) = app (T.high u1 t0) u2 t1 h1
        
        let (u,t3,h3) = mk(INF struct (T.v u1 t0, low,  high)) t2 h2 in
-       g <- Map.add (u1,u2) u g 
+       g <- Map.add (u1, u2) u g 
        
-       (u,t3,h3)
+       (u, t3, h3)
      else 
        let (low,t1,h1)  = app u1  (T.low u2 t0) t0 h0 
        let (high,t2,h2) = app u1  (T.high u2 t0) t1 h1
        
        let (u,t3,h3) = mk (INF struct (T.v u2 t0,  low,  high)) t2 h2 in
-       g <- Map.add (u1,u2) u g 
+       g <- Map.add (u1, u2) u g 
        
-       (u,t3,h3)
+       (u, t3, h3)
 
    app u1 u2 t h
 
@@ -254,15 +252,15 @@ module BDD =
         (tr, hr)
       
       match T.v u0 t with
-      | i when i > j -> (u0,t0,h0)
+      | i when i > j -> (u0, t0, h0)
       | i when i < j ->
-        let (low,t1,h1)  = res (T.low u0 t)  t0 h0   in
-        let t15,h15 = update t1 h1 low
+          let (low,t1,h1)  = res (T.low u0 t)  t0 h0   in
+          let t15,h15 = update t1 h1 low
 
-        let (high,t2,h2) = res (T.high u0 t) t15 h15 in 
-        let t25, h25 = update t2 h2 high
-     
-        mk(INF struct(T.v u0 t,low,high )) t25 h25
+          let (high,t2,h2) = res (T.high u0 t) t15 h15 in 
+          let t25, h25 = update t2 h2 high
+       
+          mk(INF struct(T.v u0 t,low,high )) t25 h25
         
       | _ -> match b with
              | 0 -> res (T.low u0 t) t0 h0
@@ -270,6 +268,44 @@ module BDD =
              | _ -> failwith ("this should never happen, b is setted to something else than 0 or 1")
 
     res u tRes hRes 
+
+  // restrict improved using dynamic programming
+  let restrict4 u j b t = 
+    //precondition: b is either 1 or 0
+    let mutable g = Map.ofList [] 
+    let (U maxVar) = u
+    let tRes = Map.ofList [] |> T.init maxVar // give me a T to build a result tr table,
+    let hRes = T.t2h tRes   //an H to pass to mk called hRes
+
+    let rec res u0 t0 h0  =
+      // updates table t1 and h1 with value u0 from table t
+      let update t1 h1 u0 = 
+        let tr = Map.add u0 (Map.find u0 t) t1    in
+        let hr = Map.add (Map.find u0 t) u0 h1    in
+        (tr, hr)
+      let u0Val = T.v u0 t
+      match u0Val with
+      | i when i > j -> (u0, t0, h0)
+      | i when i < j ->
+          if Map.containsKey u0 g then (Map.find u0 g, t0, h0)
+          else 
+            let (low,t1,h1)  = res (T.low u0 t)  t0 h0   in
+            let t15,h15 = update t1 h1 low
+
+            let (high,t2,h2) = res (T.high u0 t) t15 h15 in 
+            let t25, h25 = update t2 h2 high
+            
+            let (uRes, tRes, hRes) = mk(INF struct(T.v u0 t,low,high )) t25 h25
+            g <- Map.add u0 uRes g
+            (uRes, tRes, hRes)
+        
+      | _ -> match b with
+             | 0 -> res (T.low u0 t) t0 h0
+             | 1 -> res (T.high u0 t) t0 h0
+             | _ -> failwith ("this should never happen, b is setted to something else than 0 or 1")
+
+    res u tRes hRes 
+
 
   let hello name =
     printfn "Hello %s" name
@@ -281,22 +317,22 @@ module Plot =
   let tEntry2dotLine (u)  (inf)  (dot: string) =
     match inf with
     | (INF struct (i,olw,ohg )) ->
-      match u with 
-      | U u1 -> 
-        let U lw ,U hg = olw , ohg
+        match u with 
+        | U u1 -> 
+            let U lw ,U hg = (olw , ohg)
 
-        let labels = dot    + sprintf " %i [label=<X<SUB>%i</SUB>>,shape=circle, xlabel=%i] " u1 i u1  in
-        let lablow = labels + sprintf " %i -- %i [style=dashed]" u1 lw in
-        lablow + sprintf " %i -- %i " u1 hg
+            let labels = dot    + sprintf " %i [label=<X<SUB>%i</SUB>>,shape=circle, xlabel=%i] " u1 i u1  in
+            let lablow = labels + sprintf " %i -- %i [style=dashed]" u1 lw in
+            lablow + sprintf " %i -- %i " u1 hg
     | (INF0 struct (i,Zero,Zero )) -> dot + "graph { 1 [shape=box] 0 [shape=box] "
     | (INF0 struct (i,One,One ))   -> dot
     | (INF0 _)                     -> 
-                             failwith "something went wrong in tEntry2dotLine INF0 struct tuple is irrepresentable"
+        failwith "something went wrong in tEntry2dotLine INF0 struct tuple is irrepresentable"
       
            
   let t2dot (t:T) : string =
     //iterate the map
-    let arr = Map.toArray t |> Array.sortBy (fun (U k,_v) -> -k)
+    let arr = Map.toArray t |> Array.sortBy (fun (U k, _v) -> -k)
     let beg = Array.foldBack (fun (k, v) acc ->  (tEntry2dotLine k v acc) ) arr ""
     in beg + "}"
     //let result = Map.foldBack (fun k v acc ->  (tEntry2dotLine k v acc) ) t ""
