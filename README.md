@@ -28,18 +28,18 @@ dotnet test
 - [x] Mk
 - [x] Build
 - [x] Apply
-- [ ] Restrict (exponential running time)
-- [ ] Restrict (linear running time)
+- [x] Restrict (exponential running time)
+- [x] Restrict (linear running time)
 - [ ] SatCount
 - [ ] AnySat
-- [ ] AllSat
+
 
 
 ### Nice to have
 
 - [ ] function t2svg : T -> Bdd.svg
-- [ ] function print : T -> 
-- [ ] Simplify
+- [ ] AllSat algorithm [3]
+- [ ] Simplify algorithm [3]
 
 ## References
 
