@@ -56,5 +56,7 @@ module Program =
 
     let (u8,t8,h8) = BDD.restrict3 (U 6) 2 1 t7
 
+    let result = BDD.satCount (U 7) t
+
     
     0

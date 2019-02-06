@@ -4,8 +4,8 @@ open System
 
 module Types = 
 
-   type UId0 =   Zero 
-               | One 
+   type UId0 = Zero 
+             | One 
    and  UId  = U of int
    and  V    = int
    and  Low  = UId
@@ -18,7 +18,7 @@ module Types =
    and  H    = Map<Inf,UId>
 
    //boolean expression with variables
-   type BVarExpr = | And  of BVarExpr * BVarExpr
+   type BVarExpr =   And  of BVarExpr * BVarExpr
                    | Or   of BVarExpr * BVarExpr
                    | Then of BVarExpr * BVarExpr
                    | Iff  of BVarExpr * BVarExpr
@@ -73,7 +73,7 @@ module T =
    
   // wouln't be cool to have a function t2h s.t. given a t it returns an H?
   //the problem with H is that the two first values: 0 and 1 have the same value
-  let t2h t = Map.foldBack (fun k v acc -> (v, k)::acc) t []  |> Map.ofList
+  let t2h t = Map.foldBack (fun k v acc -> (v, k) :: acc) t []  |> Map.ofList
 
 
 module H = 
@@ -305,6 +305,23 @@ module BDD =
              | _ -> failwith ("this should never happen, b is setted to something else than 0 or 1")
 
     res u tRes hRes 
+
+  let satCount u t = 
+    
+    let rec count u =
+      let (U i) = u in 
+      match i with 
+      | 0 -> 0
+      | 1 -> 1
+      | _ -> 
+          let low = T.low u t in
+          let high = T.high u t in 
+          let plow =  (pown 2 ((T.v (low) t) - (T.v u t) - 1))  in
+          let phigh = (pown 2 ((T.v (high) t) - (T.v u t) - 1)) in
+          plow  * (count low)  + phigh * (count high) 
+
+    let partRes = pown 2 ((T.v u t) - 1) in 
+    partRes * count u
 
 
   let hello name =

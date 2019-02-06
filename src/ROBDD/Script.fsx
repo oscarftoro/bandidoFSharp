@@ -31,7 +31,10 @@ let t : T = Map.ofArray [|(U 0, (INF0 struct (5,Zero,Zero)))
                         ; (U 6, (INF struct (2,U 0, U 4) )) 
                         ; (U 7, (INF struct (1,U 5, U 6) ))|]
 
-//probably we couls add 0 and 1 at the end ? not sure yet
+//construct an H table based on T
+let hfromt = T.t2h t
+
+//probably we could add 0 and 1 at the end ? not sure yet
 let h : H = Map.ofArray [|((INF0 struct (5,Zero,Zero)) ,U 0)
                         ; ((INF0 struct (5,One,One))   ,U 1)
                         ; ((INF  struct (4,U 1,U 0)),U 2)
@@ -40,6 +43,10 @@ let h : H = Map.ofArray [|((INF0 struct (5,Zero,Zero)) ,U 0)
                         ; ((INF  struct (2,U 4,U 0)),U 5)
                         ; ((INF  struct (2,U 0,U 4)),U 6) 
                         ; ((INF  struct (1,U 5,U 6)),U 7)|]
+
+
+// tadaaaa!
+h = hfromt;;
    
 let Some (t0) = H.lookup (INF0 struct (5,Zero,Zero)) h 
 
@@ -47,6 +54,8 @@ let Some (t0) = H.lookup (INF0 struct (5,Zero,Zero)) h
 let (h0,t0) : H * T = (Map.ofList [], Map.ofList [])
 
 let u0, t1, h1 = BDD.build (Or(Iff(X 1,X 2), X 3)) 3
+
+
 
 Plot.t2dot t1;;
 
@@ -104,19 +113,18 @@ Plot.t2dot t6;;
 
 // from symbolic boolean manipulation with Ordered Binary Decision Diagrams
 // page 14
-let t7 : T = Map.ofArray [|(U 0, (INF0 struct (6,Zero,Zero) ))
-                         ; (U 1, (INF0 struct (6,One, One)  ))
-                         ; (U 2, (INF struct (3,U 0,U 1)    ))
-                         ; (U 3, (INF struct (3,U 1,U 0)    ))
-                         ; (U 4, (INF struct (2,U 0,U 2)    ))
-                         ; (U 5, (INF struct (2,U 3,U 2)    ))
-                         ; (U 6, (INF struct (1,U 4,U 5)    ))|]
-
+let t7 : T = 
+  Map.ofArray [|(U 0, (INF0 struct (6, Zero, Zero) ))
+              ; (U 1, (INF0 struct (6, One, One)   ))
+              ; (U 2, (INF struct (3, U 0, U 1)    ))
+              ; (U 3, (INF struct (3, U 1, U 0)    ))
+              ; (U 4, (INF struct (2, U 0, U 2)    ))
+              ; (U 5, (INF struct (2, U 3, U 2)    ))
+              ; (U 6, (INF struct (1, U 4, U 5)    ))|]
 
 Plot.t2dot t7;;
 
-
-let (u8,t8,h8) = BDD.restrict3 (U 6) 2 1 t7
+let (u8,t8,h8) = BDD.restrict4 (U 6) 2 1 t7
 
 Plot.t2dot t8;;
 
@@ -131,3 +139,13 @@ let tm =
             ; (U 5, INF  struct (2, U 3, U 2))
             ; (U 6, INF  struct (1, U 4, U 5))]
  
+//let us count sats
+BDD.satCount (U 7) t // 4
+
+BDD.satCount (U 6) t2  // 16
+
+BDD.satCount (U 6) t3 // 16
+
+BDD.satCount (U 8) t4 //24
+
+BDD.satCount (U 5) t5 //12
