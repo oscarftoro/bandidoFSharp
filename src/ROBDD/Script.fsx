@@ -34,7 +34,7 @@ let t : T = Map.ofArray [|(U 0, (INF0 struct (5,Zero,Zero)))
 
 //construct an H table based on T
 let hfromt = T.t2h t
-//un comment
+//un comment 2
 let h : H = Map.ofArray [|((INF0 struct (5,Zero,Zero)) ,U 0)
                         ; ((INF0 struct (5,One,One))   ,U 1)
                         ; ((INF  struct (4,U 1,U 0)),U 2)
