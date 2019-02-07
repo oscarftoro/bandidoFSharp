@@ -31,7 +31,7 @@ dotnet test
 - [x] Restrict (exponential running time)
 - [x] Restrict (linear running time)
 - [ ] SatCount
-- [ ] Apply Dinamic Programming to SatCount
+- [ ] Apply Dynamic Programming to SatCount
 - [ ] AnySat
 
 

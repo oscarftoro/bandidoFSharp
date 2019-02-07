@@ -21,7 +21,8 @@ let be01 = bve2be ex06
 let result01 = eval be01 
 
 
-//lets create a bdd (fig7 from andersens paper)
+//let us create a bdd (fig. 7 from andersens paper [3])
+// (x_1 <=>x_2) /\ (x_3 <=> x_4) with ordering x_1 < x_2 < x_3 < x_4
 let t : T = Map.ofArray [|(U 0, (INF0 struct (5,Zero,Zero)))
                         ; (U 1, (INF0 struct (5,One,One)))
                         ; (U 2, (INF struct (4,U 1, U 0) ))
@@ -34,7 +35,6 @@ let t : T = Map.ofArray [|(U 0, (INF0 struct (5,Zero,Zero)))
 //construct an H table based on T
 let hfromt = T.t2h t
 
-//probably we could add 0 and 1 at the end ? not sure yet
 let h : H = Map.ofArray [|((INF0 struct (5,Zero,Zero)) ,U 0)
                         ; ((INF0 struct (5,One,One))   ,U 1)
                         ; ((INF  struct (4,U 1,U 0)),U 2)
