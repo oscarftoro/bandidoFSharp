@@ -280,8 +280,8 @@ module BDD =
     let rec res u0 t0 h0  =
       // updates table t1 and h1 with value u0 from table t
       let update t1 h1 u0 = 
-        let tr = Map.add u0 (Map.find u0 t) t1    in
-        let hr = Map.add (Map.find u0 t) u0 h1    in
+        let tr = Map.add u0 (Map.find u0 t) t1 in
+        let hr = Map.add (Map.find u0 t) u0 h1 in
         (tr, hr)
       let u0Val = T.v u0 t
       match u0Val with
@@ -307,22 +307,22 @@ module BDD =
     res u tRes hRes 
 
   let satCount u t = 
-    
+    let partRes = pown 2 ((T.v u t) - 1) in 
+
     let rec count u =
-      let (U i) = u in 
+      let (U i) = u in      
       match i with 
       | 0 -> 0
       | 1 -> 1
       | _ -> 
-          let low = T.low u t in
-          let high = T.high u t in 
-          let plow =  (pown 2 ((T.v (low) t) - (T.v u t) - 1))  in
+          let low   = T.low u t in
+          let high  = T.high u t in 
+          let plow  = (pown 2 ((T.v (low)  t) - (T.v u t) - 1)) in
           let phigh = (pown 2 ((T.v (high) t) - (T.v u t) - 1)) in
+
           plow  * (count low)  + phigh * (count high) 
 
-    let partRes = pown 2 ((T.v u t) - 1) in 
     partRes * count u
-
 
   let hello name =
     printfn "Hello %s" name
