@@ -34,7 +34,7 @@ let t : T = Map.ofArray [|(U 0, (INF0 struct (5,Zero,Zero)))
 
 //construct an H table based on T
 let hfromt = T.t2h t
-//un comment 2
+//un comment 2 
 let h : H = Map.ofArray [|((INF0 struct (5,Zero,Zero)) ,U 0)
                         ; ((INF0 struct (5,One,One))   ,U 1)
                         ; ((INF  struct (4,U 1,U 0)),U 2)
@@ -140,12 +140,32 @@ let tm =
             ; (U 6, INF  struct (1, U 4, U 5))]
  
 //let us count sats
-BDD.satCount (U 7) t // 4
+BDD.satCount (U 7) t // 4 with int and with float 12960.0
 
-BDD.satCount (U 6) t2  // 16
+BDD.satCount (U 6) t2  // 16 and 244.0
 
-BDD.satCount (U 6) t3 // 16
+BDD.satCount (U 6) t3 // 16 and 244.0
 
-BDD.satCount (U 8) t4 //24
+BDD.satCount (U 8) t4 //24 and 1971000.0
 
-BDD.satCount (U 5) t5 //12
+BDD.satCount (U 5) t5 //12 and 676.0
+
+// let us test anysat
+
+BDD.anySat (U 7) t
+
+BDD.anySat (U 6) t2 
+
+BDD.anySat (U 6) t3
+
+BDD.anySat (U 8) t4
+
+BDD.anySat (U 5) t5 
+
+//let us test allSat
+
+BDD.allSat (U 7) t
+BDD.allSat (U 6) t2 
+BDD.allSat (U 6) t3
+BDD.allSat (U 8) t4
+BDD.allSat (U 5) t5 

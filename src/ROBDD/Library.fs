@@ -307,22 +307,38 @@ module BDD =
     res u tRes hRes 
 
   let satCount u t = 
-    let partRes = pown 2 ((T.v u t) - 1) in 
+    let partRes =  2. ** (float (T.v u t) - 1.) in 
 
     let rec count u =
       let (U i) = u in      
       match i with 
-      | 0 -> 0
-      | 1 -> 1
+      | 0 -> 0.
+      | 1 -> 1.
       | _ -> 
           let low   = T.low u t in
           let high  = T.high u t in 
-          let plow  = (pown 2 ((T.v (low)  t) - (T.v u t) - 1)) in
-          let phigh = (pown 2 ((T.v (high) t) - (T.v u t) - 1)) in
+          let plow  = 2. ** float (T.v (low)  t) - float (T.v u t) - 1. in
+          let phigh = 2. ** float (T.v (high) t) - float (T.v u t) - 1. in
 
-          plow  * (count low)  + phigh * (count high) 
+          plow  * float (count low)  + phigh * float (count high) 
 
     partRes * count u
+
+  let rec anySat u t = 
+    match u with 
+    | u when (U 0)       = u     -> failwith "there was an error : u is U  in anySat function"
+    | u when (U 1)       = u     -> []
+    | u when (T.low u t) = (U 0) -> (T.v u t, 1) :: anySat (T.high u t) t
+    | __________________________ -> (T.v u t, 0) :: anySat (T.low u t) t
+
+
+
+  let rec allSat u t  =
+    match u with
+    | u when (U 0) = u -> []
+    | u when (U 1) = u -> [[]]
+    | ________________ -> 
+        [(T.v u t, 0)] :: (allSat (T.low u t) t) :: [(T.v u t, 1)] :: (allSat (T.high u t) t)
 
   let hello name =
     printfn "Hello %s" name
