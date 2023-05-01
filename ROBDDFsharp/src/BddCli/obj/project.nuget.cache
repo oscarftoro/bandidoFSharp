@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "ek9UTnD93zqPfgtZcXF1dEOILX2g5g738gCWtf0zlx+8YVi5qIvyeQMKIdZ/yZMVcrgT+vwgUHZEd2HWAEVHTw==",
+  "success": true,
+  "projectFilePath": "/Users/oscartoro/dev/new/ROBDDFsharp/src/BddCli/BddCli.fsproj",
+  "expectedPackageFiles": [
+    "/Users/oscartoro/.nuget/packages/fsharp.core/7.0.0/fsharp.core.7.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}
